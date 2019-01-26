@@ -7,7 +7,8 @@ import (
 )
 
 type Parameter struct {
-	Port     string
+	Dir  string
+	Port string
 }
 
 func (paras *Parameter) Init() {
@@ -16,7 +17,8 @@ func (paras *Parameter) Init() {
 	)
 	flag.BoolVar(&help, "h", false, "this help")
 	flag.BoolVar(&version, "v", false, "show version and exit")
-	paras.Port = strconv.Itoa(*flag.Int("P", 2019, "listening port"))
+	paras.Dir = *flag.String("d", ".", "jssp folder")
+	paras.Port = strconv.Itoa(*flag.Int("p", 2019, "listening port"))
 	flag.Parse()
 	flag.Usage = usage
 	if help {
@@ -31,8 +33,8 @@ func (paras *Parameter) Init() {
 }
 
 func usage() {
-	println(`Usage: jssp [-p port]
-Example: jssp -p 2019
+	println(`Usage: jssp [-p port] [-d dir]
+Example: jssp -p 2019 -d .
 
 Options:`)
 }
