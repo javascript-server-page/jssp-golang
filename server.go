@@ -10,10 +10,15 @@ type JsspServer struct {
 }
 
 
-// register handlers
+// init JsspServer
 func (s *JsspServer) Init(paras *Parameter) {
+	s.Handle("/", s)
 }
 
+// handler func
+func (s *JsspServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+
+}
 
 // run Jssp server
 func (s *JsspServer) Run(paras *Parameter) {
