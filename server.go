@@ -22,6 +22,16 @@ func (s *JsspServer) Init(paras *Parameter) {
 func (s *JsspServer) ServeAll(w http.ResponseWriter, r *http.Request) {
 }
 
+func (s *JsspServer) ServeStatic(w http.ResponseWriter, r *http.Request) {
+	s.static.ServeHTTP(w, r)
+}
+
+func (s *JsspServer) ServeJssp(w http.ResponseWriter, r *http.Request) {
+}
+
+func (s *JsspServer) ServeJsjs(w http.ResponseWriter, r *http.Request) {
+}
+
 // run Jssp server
 func (s *JsspServer) Run(paras *Parameter) {
 	err := http.ListenAndServe(":"+paras.Port, s)
