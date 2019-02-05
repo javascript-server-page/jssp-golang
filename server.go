@@ -7,17 +7,19 @@ import (
 
 type JsspServer struct {
 	http.ServeMux
+	static http.Handler
+	root   http.FileSystem
 }
-
 
 // init JsspServer
 func (s *JsspServer) Init(paras *Parameter) {
-	s.Handle("/", s)
+	s.root = http.Dir(paras.Dir)
+	s.static = http.FileServer(s.root)
+	s.HandleFunc("/", s.ServeAll)
 }
 
 // handler func
-func (s *JsspServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
+func (s *JsspServer) ServeAll(w http.ResponseWriter, r *http.Request) {
 }
 
 // run Jssp server
