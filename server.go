@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"path/filepath"
 )
 
 type JsspServer struct {
@@ -20,6 +21,14 @@ func (s *JsspServer) Init(paras *Parameter) {
 
 // handler func
 func (s *JsspServer) ServeAll(w http.ResponseWriter, r *http.Request) {
+	switch filepath.Ext(r.URL.Path) {
+	case "jssp":
+		s.ServeJssp(w, r)
+	case "jsjs":
+		s.ServeJsjs(w, r)
+	default:
+		s.ServeStatic(w, r)
+	}
 }
 
 func (s *JsspServer) ServeStatic(w http.ResponseWriter, r *http.Request) {
