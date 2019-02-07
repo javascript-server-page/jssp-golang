@@ -4,7 +4,8 @@ import (
 	"github.com/robertkrimen/otto"
 )
 
-func InitOtto() *otto.Otto {
-	vm := otto.New()
-	return vm
+var ancestor *otto.Otto = otto.New()
+
+func GetJsEngine() *otto.Otto {
+	return ancestor.Copy()
 }
