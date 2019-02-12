@@ -13,10 +13,9 @@ func NewJsEngine() *otto.Otto {
 	return ancestor.Copy()
 }
 
-
 func GetJsEngine() *otto.Otto {
 	if cache.Len() == 0 {
-
+		return NewJsEngine()
 	}
-	return NewJsEngine()
+	return cache.Front().Value.(*otto.Otto)
 }
