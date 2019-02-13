@@ -3,9 +3,12 @@ package main
 import (
 	"container/list"
 	"github.com/robertkrimen/otto"
+	"sync"
 )
 
 const cache_max = 500
+
+var mutex sync.Mutex
 
 var ancestor *otto.Otto = otto.New()
 
@@ -31,6 +34,8 @@ func NewJsEngine() *otto.Otto {
 }
 
 func GetJsEngine() *otto.Otto {
+	mutex.Lock()
+	defer mutex.Unlock()
 	if cache.Len() == 0 {
 		isGenerate <- true
 		return NewJsEngine()
