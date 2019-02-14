@@ -13,17 +13,19 @@ type Parameter struct {
 
 func (paras *Parameter) Init() {
 	var (
+		port          int
+		dir           string
 		help, version bool
 	)
 	flag.BoolVar(&help, "h", false, "this help")
 	flag.BoolVar(&version, "v", false, "show version and exit")
-	paras.Dir = *flag.String("d", ".", "jssp folder")
-	paras.Port = strconv.Itoa(*flag.Int("p", 2019, "listening port"))
+	flag.StringVar(&dir, "d", ".", "jssp folder")
+	flag.IntVar(&port, "p", 2019, "listening port")
 	flag.Parse()
-	flag.Usage = usage
+	paras.Dir = dir
+	paras.Port = strconv.Itoa(port)
 	if help {
-		printVersion()
-		flag.Usage()
+		printUsage()
 		flag.PrintDefaults()
 		os.Exit(1)
 	} else if version {
@@ -32,7 +34,7 @@ func (paras *Parameter) Init() {
 	}
 }
 
-func usage() {
+func printUsage() {
 	println(`Usage: jssp [-p port] [-d dir]
 Example: jssp -p 2019 -d .
 
