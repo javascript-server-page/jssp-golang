@@ -8,9 +8,7 @@ import (
 
 const cache_max = 500
 
-var mutex sync.Mutex
-
-var ancestor *otto.Otto = otto.New()
+var mutex = new(sync.Mutex)
 
 var cache *list.List = list.New()
 
@@ -30,7 +28,7 @@ func generate() {
 }
 
 func NewJsEngine() *otto.Otto {
-	return ancestor.Copy()
+	return otto.New()
 }
 
 func GetJsEngine() *otto.Otto {
