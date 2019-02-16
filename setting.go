@@ -13,23 +13,30 @@ type Parameter struct {
 
 func (paras *Parameter) Init() {
 	var (
-		port          int
-		dir           string
 		help, version bool
 	)
 	flag.BoolVar(&help, "h", false, "this help")
 	flag.BoolVar(&version, "v", false, "show version and exit")
-	flag.StringVar(&dir, "d", ".", "jssp folder")
-	flag.IntVar(&port, "p", 2019, "listening port")
+	flag.StringVar(&(paras.Dir), "d", ".", "jssp folder")
+	flag.StringVar(&(paras.Port), "p", "2019", "listening port")
 	flag.Parse()
-	paras.Dir = dir
-	paras.Port = strconv.Itoa(port)
 	if help {
 		printUsage()
 		flag.PrintDefaults()
 		os.Exit(1)
 	} else if version {
 		printVersion()
+		os.Exit(1)
+	} else {
+		paras.organize()
+	}
+}
+
+// Organize command line parameters
+func (paras *Parameter) organize() {
+	_, err := strconv.Atoi(paras.Port)
+	if err != nil {
+		println("Port " + paras.Port + ":illegal")
 		os.Exit(1)
 	}
 }
