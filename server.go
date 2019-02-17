@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"net/url"
 	"path/filepath"
 )
 
@@ -21,7 +22,9 @@ func (s *JsspServer) Init(paras *Parameter) {
 
 // handler func
 func (s *JsspServer) ServeAll(w http.ResponseWriter, r *http.Request) {
-	switch filepath.Ext(r.URL.Path) {
+	index, ext := s.getIndexAndExt(r.URL)
+	r.URL.Path += index
+	switch ext {
 	case "jssp":
 		s.ServeJssp(w, r)
 	case "jsjs":
@@ -39,6 +42,10 @@ func (s *JsspServer) ServeJssp(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *JsspServer) ServeJsjs(w http.ResponseWriter, r *http.Request) {
+}
+
+func (s *JsspServer) getIndexAndExt(u *url.URL) (string, string) {
+	return "index.html", filepath.Ext(u.Path)
 }
 
 // run Jssp server
