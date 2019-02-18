@@ -45,7 +45,11 @@ func (s *JsspServer) ServeJsjs(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *JsspServer) getIndexAndExt(u *url.URL) (string, string) {
-	return "index.html", filepath.Ext(u.Path)
+	if u.Path[len(u.Path)-1] == '/' {
+		return "", ""
+	} else {
+		return "", filepath.Ext(u.Path)
+	}
 }
 
 // run Jssp server
