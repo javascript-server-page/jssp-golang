@@ -30,12 +30,8 @@ func (s *JsspServer) ServeAll(w http.ResponseWriter, r *http.Request) {
 	case "jsjs":
 		s.ServeJsjs(w, r)
 	default:
-		s.ServeStatic(w, r)
+		s.static.ServeHTTP(w, r)
 	}
-}
-
-func (s *JsspServer) ServeStatic(w http.ResponseWriter, r *http.Request) {
-	s.static.ServeHTTP(w, r)
 }
 
 func (s *JsspServer) ServeJssp(w http.ResponseWriter, r *http.Request) {
