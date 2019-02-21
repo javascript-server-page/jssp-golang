@@ -44,10 +44,10 @@ func (s *JsspServer) ServeJsjs(js *JsEngine, f *http.File) {
 func (s *JsspServer) getJsIndexAndExt(u *url.URL) (*http.File, string) {
 	const JSSP = "index.jssp"
 	const JSJS = "index.jsjs"
+	if !strings.HasPrefix(u.Path, "/") {
+		u.Path = "/" + u.Path
+	}
 	if u.Path[len(u.Path)-1] == '/' {
-		if !strings.HasPrefix(u.Path, "/") {
-			u.Path = "/" + u.Path
-		}
 		f := getFile(s.root, u.Path+JSSP)
 		if f != nil {
 			return f, "jssp"
@@ -55,6 +55,19 @@ func (s *JsspServer) getJsIndexAndExt(u *url.URL) (*http.File, string) {
 		f = getFile(s.root, u.Path+JSJS)
 		if f != nil {
 			return f, "jsjs"
+		}
+	} else {
+		if strings.HasSuffix(u.Path, ".jssp") {
+			f := getFile(s.root, u.Path)
+			if f != nil {
+				return f, "jssp"
+			}
+		}
+		if strings.HasSuffix(u.Path, ".jsjs") {
+			f := getFile(s.root, u.Path)
+			if f != nil {
+				return f, "jsjs"
+			}
 		}
 	}
 	return nil, ""
