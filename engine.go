@@ -4,6 +4,7 @@ import (
 	"container/list"
 	"fmt"
 	"github.com/robertkrimen/otto"
+	"net/http"
 	"sync"
 )
 
@@ -48,4 +49,15 @@ func GetJsEngine() *JsEngine {
 		return NewJsEngine()
 	}
 	return cache.Remove(cache.Front()).(*JsEngine)
+}
+
+func GenerateJsspEnv(w http.ResponseWriter, r *http.Request) *JsEngine {
+	jse := GetJsEngine()
+	jse.Set("echo", func(call otto.FunctionCall) otto.Value {
+		for _, e := range call.ArgumentList {
+			w.Write([]byte(e.String()))
+		}
+		return otto.Value{}
+	})
+	return jse
 }
