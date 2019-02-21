@@ -25,20 +25,20 @@ func (s *JsspServer) ServeAll(w http.ResponseWriter, r *http.Request) {
 	index, ext := s.getJsIndexAndExt(r.URL)
 	switch ext {
 	case "jssp":
-		s.ServeJssp(w, r, index)
+		s.ServeJssp(GenerateJsspEnv(w, r), index)
 	case "jsjs":
-		s.ServeJsjs(w, r, index)
+		s.ServeJsjs(GenerateJsspEnv(w, r), index)
 	default:
 		s.static.ServeHTTP(w, r)
 	}
 }
 
-func (s *JsspServer) ServeJssp(w http.ResponseWriter, r *http.Request, f *http.File) {
-	w.Write([]byte("jssp"))
+func (s *JsspServer) ServeJssp(js *JsEngine, f *http.File) {
+	js.Run("echo('jssp')")
 }
 
-func (s *JsspServer) ServeJsjs(w http.ResponseWriter, r *http.Request, f *http.File) {
-	w.Write([]byte("jsjs"))
+func (s *JsspServer) ServeJsjs(js *JsEngine, f *http.File) {
+	js.Run("echo('jsjs')")
 }
 
 func (s *JsspServer) getJsIndexAndExt(u *url.URL) (*http.File, string) {
