@@ -2,9 +2,18 @@ package main
 
 import (
 	"container/list"
+	"fmt"
 	"github.com/robertkrimen/otto"
 	"sync"
 )
+
+type JsEngine struct {
+	*otto.Otto
+}
+
+func (e *JsEngine) Run(src interface{}) (fmt.Stringer, error) {
+	return e.Otto.Run(src)
+}
 
 const cache_max = 500
 
@@ -27,16 +36,16 @@ func generate() {
 	}
 }
 
-func NewJsEngine() *otto.Otto {
-	return otto.New()
+func NewJsEngine() *JsEngine {
+	return &JsEngine{otto.New()}
 }
 
-func GetJsEngine() *otto.Otto {
+func GetJsEngine() *JsEngine {
 	mutex.Lock()
 	defer mutex.Unlock()
 	if cache.Len() == 0 {
 		isGenerate <- true
 		return NewJsEngine()
 	}
-	return cache.Remove(cache.Front()).(*otto.Otto)
+	return cache.Remove(cache.Front()).(*JsEngine)
 }
