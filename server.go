@@ -7,6 +7,11 @@ import (
 	"strings"
 )
 
+const JSSP = ".jssp"
+const JSJS = ".jsjs"
+const INDEX_JSSP = "index" + JSSP
+const INDEX_JSJS = "index" + JSJS
+
 type JsspServer struct {
 	http.ServeMux
 	static http.Handler
@@ -24,9 +29,9 @@ func (s *JsspServer) Init(paras *Parameter) {
 func (s *JsspServer) ServeAll(w http.ResponseWriter, r *http.Request) {
 	index, ext := s.getJsIndexAndExt(r.URL)
 	switch ext {
-	case "jssp":
+	case JSSP:
 		s.ServeJssp(GenerateJsspEnv(w, r), index)
-	case "jsjs":
+	case JSJS:
 		s.ServeJsjs(GenerateJsspEnv(w, r), index)
 	default:
 		s.static.ServeHTTP(w, r)
@@ -42,31 +47,25 @@ func (s *JsspServer) ServeJsjs(js *JsEngine, f *http.File) {
 }
 
 func (s *JsspServer) getJsIndexAndExt(u *url.URL) (*http.File, string) {
-	const JSSP = "index.jssp"
-	const JSJS = "index.jsjs"
-	if !strings.HasPrefix(u.Path, "/") {
+	if u.Path[0] != '/' {
 		u.Path = "/" + u.Path
 	}
 	if u.Path[len(u.Path)-1] == '/' {
-		f := getFile(s.root, u.Path+JSSP)
-		if f != nil {
-			return f, "jssp"
+		if f := getFile(s.root, u.Path+INDEX_JSSP); f != nil {
+			return f, JSSP
 		}
-		f = getFile(s.root, u.Path+JSJS)
-		if f != nil {
-			return f, "jsjs"
+		if f := getFile(s.root, u.Path+INDEX_JSJS); f != nil {
+			return f, JSJS
 		}
 	} else {
-		if strings.HasSuffix(u.Path, ".jssp") {
-			f := getFile(s.root, u.Path)
-			if f != nil {
-				return f, "jssp"
+		if strings.HasSuffix(u.Path, JSSP) {
+			if f := getFile(s.root, u.Path); f != nil {
+				return f, JSSP
 			}
 		}
-		if strings.HasSuffix(u.Path, ".jsjs") {
-			f := getFile(s.root, u.Path)
-			if f != nil {
-				return f, "jsjs"
+		if strings.HasSuffix(u.Path, JSJS) {
+			if f := getFile(s.root, u.Path); f != nil {
+				return f, JSJS
 			}
 		}
 	}
