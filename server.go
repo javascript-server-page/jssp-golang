@@ -28,22 +28,18 @@ func (s *JsspServer) Init(paras *Parameter) {
 // handler func
 func (s *JsspServer) ServeAll(w http.ResponseWriter, r *http.Request) {
 	index, ext := s.getJsIndexAndExt(r.URL)
-	switch ext {
-	case JSSP:
-		s.ServeJssp(GenerateJsspEnv(w, r), index)
-	case JSJS:
-		s.ServeJsjs(GenerateJsspEnv(w, r), index)
-	default:
+	if index == nil {
 		s.static.ServeHTTP(w, r)
+	} else {
+		data , err := readFile(index)
+		if err != nil {
+			println(err.Error())
+		}
+		if ext == JSSP {
+			 data = jssp_jsjs(data)
+		}
+		GenerateJsspEnv(w, r).Run(data)
 	}
-}
-
-func (s *JsspServer) ServeJssp(js *JsEngine, f *http.File) {
-	js.Run("echo('jssp')")
-}
-
-func (s *JsspServer) ServeJsjs(js *JsEngine, f *http.File) {
-	js.Run("echo('jsjs')")
 }
 
 func (s *JsspServer) getJsIndexAndExt(u *url.URL) (*http.File, string) {
