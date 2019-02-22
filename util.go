@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io/ioutil"
 	"net/http"
 )
 
@@ -19,4 +20,8 @@ func getFile(fs http.FileSystem, name string) *http.File {
 	} else {
 		return &f
 	}
+}
+
+func readFile(f *http.File) ([]byte, error) {
+	return ioutil.ReadAll(*f)
 }
