@@ -24,6 +24,7 @@ func getFile(fs http.FileSystem, name string) *http.File {
 }
 
 func readFile(f *http.File) ([]byte, error) {
+	defer (*f).Close()
 	return ioutil.ReadAll(*f)
 }
 
