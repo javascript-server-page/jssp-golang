@@ -1,7 +1,7 @@
 package main
 
 const Version = "0.1"
-const Server = "jssp-" + Version
+const Server = "jssp-golang-" + Version
 
 type Application struct {
 	server *JsspServer
