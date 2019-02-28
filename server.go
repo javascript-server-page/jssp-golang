@@ -42,7 +42,7 @@ func (s *JsspServer) ServeAll(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *JsspServer) getJsIndexAndExt(u *url.URL) (*http.File, string) {
+func (s *JsspServer) getJsIndexAndExt(u *url.URL) (http.File, string) {
 	if u.Path[0] != '/' {
 		u.Path = "/" + u.Path
 	}

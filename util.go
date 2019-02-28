@@ -6,7 +6,7 @@ import (
 	"regexp"
 )
 
-func getFile(fs http.FileSystem, name string) *http.File {
+func getFile(fs http.FileSystem, name string) http.File {
 	f, err := fs.Open(name)
 	if err != nil {
 		return nil
@@ -19,13 +19,13 @@ func getFile(fs http.FileSystem, name string) *http.File {
 		f.Close()
 		return nil
 	} else {
-		return &f
+		return f
 	}
 }
 
-func readFile(f *http.File) ([]byte, error) {
-	defer (*f).Close()
-	return ioutil.ReadAll(*f)
+func readFile(f http.File) ([]byte, error) {
+	defer f.Close()
+	return ioutil.ReadAll(f)
 }
 
 var repl = []byte(`);\n $1 \n  echo(`)
