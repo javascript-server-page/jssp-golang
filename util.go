@@ -3,7 +3,6 @@ package main
 import (
 	"io/ioutil"
 	"net/http"
-	"regexp"
 )
 
 func getFile(fs http.FileSystem, name string) http.File {
@@ -28,10 +27,6 @@ func readFile(f http.File) ([]byte, error) {
 	return ioutil.ReadAll(f)
 }
 
-var repl = []byte(`);\n $1 \n  echo(`)
-
-var reg = regexp.MustCompile("<%([\\s\\S]+?)%>")
-
 func jssp_jsjs(data []byte) []byte {
-	return reg.ReplaceAll(data, repl)
+	return data
 }
