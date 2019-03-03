@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"io/ioutil"
 	"net/http"
 )
@@ -28,5 +29,34 @@ func readFile(f http.File) ([]byte, error) {
 }
 
 func jssp_jsjs(data []byte) []byte {
-	return data
+	buf := &bytes.Buffer{}
+	buf.WriteString("echo(\"")
+	isJsjs := false
+	for i, n := 0, len(data); i < n; i++ {
+		c := data[i]
+		if isJsjs {
+			if c == '%' && data[i+1] == '>' {
+				buf.WriteString(";echo(\"")
+				i++
+				isJsjs = false
+			} else {
+				buf.WriteByte(c)
+			}
+		} else {
+			if c == '<' && data[i+1] == '%' {
+				buf.WriteString(`");`)
+				i++
+				isJsjs = true
+			} else {
+				if c == '\n' {
+					buf.WriteString(`\n");`)
+					buf.WriteByte(c)
+					buf.WriteString("echo(\"")
+				} else {
+					buf.WriteByte(c)
+				}
+			}
+		}
+	}
+	return buf.Bytes()
 }
