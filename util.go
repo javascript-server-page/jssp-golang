@@ -30,13 +30,13 @@ func readFile(f http.File) ([]byte, error) {
 
 func jssp_jsjs(data []byte) []byte {
 	buf := &bytes.Buffer{}
-	buf.WriteString("echo(\"")
+	buf.WriteString(`echo("`)
 	isJsjs := false
 	for i, n := 0, len(data); i < n; i++ {
 		c := data[i]
 		if isJsjs {
 			if c == '%' && data[i+1] == '>' {
-				buf.WriteString(";echo(\"")
+				buf.WriteString(`;echo("`)
 				i++
 				isJsjs = false
 			} else {
@@ -48,15 +48,21 @@ func jssp_jsjs(data []byte) []byte {
 				i++
 				isJsjs = true
 			} else {
-				if c == '\n' {
+				switch c {
+				case '\n':
 					buf.WriteString(`\n");`)
 					buf.WriteByte(c)
-					buf.WriteString("echo(\"")
-				} else {
+					buf.WriteString(`echo("`)
+				case '\r':
+					continue
+				case '"':
+					buf.WriteString(`\"`)
+				default:
 					buf.WriteByte(c)
 				}
 			}
 		}
 	}
+	buf.WriteString(`");`)
 	return buf.Bytes()
 }
