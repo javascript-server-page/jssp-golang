@@ -1,10 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 )
 
@@ -34,8 +34,8 @@ func (s *JsspServer) ServeAll(w http.ResponseWriter, r *http.Request) {
 	} else {
 		data , err := readFile(index)
 		if err != nil {
-			msg, status := s.toHTTPError(err)
-			s.error(w, msg, status)
+			s.error(w, err)
+			return
 		}
 		if ext == JSSP {
 			 data = jssp_jsjs(data)
@@ -70,21 +70,11 @@ func (s *JsspServer) getJsIndexAndExt(u *url.URL) (http.File, string) {
 	return nil, ""
 }
 
-func (s *JsspServer) toHTTPError(err error) (msg string, httpStatus int) {
-	if os.IsNotExist(err) {
-		return "404 page not found", http.StatusNotFound
-	}
-	if os.IsPermission(err) {
-		return "403 Forbidden", http.StatusForbidden
-	}
-	// Default:
-	return "500 Internal Server Error", http.StatusInternalServerError
-}
-
-func (s *JsspServer) error(w http.ResponseWriter, error string, code int) {
+func (s *JsspServer) error(w http.ResponseWriter, e error) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
-	w.WriteHeader(code)
+	w.WriteHeader(http.StatusInternalServerError)
+	fmt.Fprintln(w, e.Error())
 }
 
 // run Jssp server
