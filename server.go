@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -32,13 +31,14 @@ func (s *JsspServer) ServeAll(w http.ResponseWriter, r *http.Request) {
 	if index == nil {
 		s.static.ServeHTTP(w, r)
 	} else {
-		data , err := readFile(index)
+		s.header(w)
+		data, err := readFile(index)
 		if err != nil {
 			s.error(w, err)
 			return
 		}
 		if ext == JSSP {
-			 data = jssp_jsjs(data)
+			data = jssp_jsjs(data)
 		}
 		GenerateJsspEnv(w, r).Run(data)
 	}
@@ -77,10 +77,15 @@ func (s *JsspServer) error(w http.ResponseWriter, e error) {
 	fmt.Fprintln(w, e.Error())
 }
 
+func (s *JsspServer) header(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Server", Server)
+}
+
 // run Jssp server
 func (s *JsspServer) Run(paras *Parameter) {
 	err := http.ListenAndServe(":"+paras.Port, s)
 	if err != nil {
-		log.Fatal(err)
+		println(err.Error())
 	}
 }
