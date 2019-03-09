@@ -40,9 +40,15 @@ func (s *JsspServer) ServeAll(w http.ResponseWriter, r *http.Request) {
 		if ext == JSSP {
 			data = jssp_jsjs(data)
 		}
-		_, err = GenerateJsspEnv(w, r).Run(data)
+		js := GenerateJsspEnv(w, r)
+		ast, err := js.Parse(data)
 		if err != nil {
 			s.error(w, err)
+			return
+		}
+		_, err = js.Run(ast)
+		if err != nil {
+			w.Write([]byte(err.Error()))
 		}
 	}
 }

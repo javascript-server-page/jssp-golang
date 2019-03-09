@@ -4,12 +4,17 @@ import (
 	"container/list"
 	"fmt"
 	"github.com/robertkrimen/otto"
+	"github.com/robertkrimen/otto/parser"
 	"net/http"
 	"sync"
 )
 
 type JsEngine struct {
 	*otto.Otto
+}
+
+func (e *JsEngine) Parse(src []byte) (interface{}, error) {
+	return parser.ParseFile(nil, "", src, 0)
 }
 
 func (e *JsEngine) Run(src interface{}) (fmt.Stringer, error) {
