@@ -43,7 +43,12 @@ func generate() {
 }
 
 func NewJsEngine() *JsEngine {
-	return &JsEngine{otto.New()}
+	js := &JsEngine{otto.New()}
+	js.Set("file", GenerateObjFile(js))
+	js.Set("http", GenerateObjHttp(js))
+	js.Set("jsdo", GenerateObjJsdo(js))
+	js.Set("jssp", GenerateObjJssp(js))
+	return js
 }
 
 func GetJsEngine() *JsEngine {
@@ -58,6 +63,8 @@ func GetJsEngine() *JsEngine {
 
 func GenerateJsspEnv(w http.ResponseWriter, r *http.Request) *JsEngine {
 	jse := GetJsEngine()
+	jse.Set("req", GenerateObjReq(jse, r))
+	jse.Set("res", GenerateObjRes(jse, w))
 	jse.Set("echo", func(call otto.FunctionCall) otto.Value {
 		for _, e := range call.ArgumentList {
 			w.Write([]byte(e.String()))
