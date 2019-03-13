@@ -5,6 +5,6 @@ import (
 )
 
 func GenerateObjHttp(jse *JsEngine) *otto.Object {
-	obj, _ := jse.Object("{}")
+	obj, _ := jse.Object("({})")
 	return obj
 }
