@@ -5,6 +5,6 @@ import (
 )
 
 func GenerateObjJssp(jse *JsEngine) *otto.Object {
-	obj, _ := jse.Object("({})")
+	obj := jse.CreateObject()
 	return obj
 }

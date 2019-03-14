@@ -6,6 +6,6 @@ import (
 )
 
 func GenerateObjRes(jse *JsEngine, w http.ResponseWriter) *otto.Object {
-	obj, _ := jse.Object("({})")
+	obj := jse.CreateObject()
 	return obj
 }
