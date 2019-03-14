@@ -21,6 +21,11 @@ func (e *JsEngine) Run(src interface{}) (fmt.Stringer, error) {
 	return e.Otto.Run(src)
 }
 
+func (e *JsEngine) CreateObject() *otto.Object {
+	obj, _ := e.Object("({})")
+	return obj
+}
+
 const cache_max = 500
 
 var mutex = new(sync.Mutex)
