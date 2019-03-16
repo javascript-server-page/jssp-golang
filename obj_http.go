@@ -11,23 +11,25 @@ func GenerateObjHttp(jse *JsEngine) *otto.Object {
 	return obj
 }
 
-func def_request(client *http.Client, method string, url, body, header *otto.Object) *otto.Object {
+func def_request(client *http.Client, method string, url, body, header *otto.Value) *otto.Value {
 	req, err := http.NewRequest(convert_url_body(method, url, body))
 	if err != nil {
 		return build_response(nil, err)
 	}
-	for _, key := range header.Keys() {
-		value, _ := header.Get(key)
-		req.Header.Add(key, value.String())
+	if header.IsObject() {
+		h := header.Object()
+		for _, key := range h.Keys() {
+			value, _ := h.Get(key)
+			req.Header.Add(key, value.String())
+		}
 	}
-	header.Keys()
 	return build_response(client.Do(req))
 }
 
-func build_response(response *http.Response, err error) *otto.Object {
+func build_response(response *http.Response, err error) *otto.Value {
 	return nil
 }
 
-func convert_url_body(method string, url, params *otto.Object) (string, string, io.Reader) {
+func convert_url_body(method string, url, params *otto.Value) (string, string, io.Reader) {
 	return method, "", nil
 }
