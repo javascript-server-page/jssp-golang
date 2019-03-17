@@ -7,7 +7,12 @@ import (
 )
 
 func GenerateObjHttp(jse *JsEngine) *otto.Object {
+	client := &http.Client{}
 	obj := jse.CreateObject()
+	obj.Set("get", func(call otto.FunctionCall) otto.Value {
+		url, body, header := call.Argument(0), call.Argument(1), call.Argument(1)
+		return *def_request(client, "GET", &url, &body, &header)
+	})
 	return obj
 }
 
