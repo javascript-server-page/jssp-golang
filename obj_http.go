@@ -6,14 +6,14 @@ import (
 	"net/http"
 )
 
-func GenerateObjHttp(jse *JsEngine) *otto.Object {
+func GenerateObjHttp(jse *JsEngine) *otto.Value {
 	client := &http.Client{}
-	obj := jse.CreateObject()
+	val, obj := jse.CreateObject()
 	obj.Set("get", func(call otto.FunctionCall) otto.Value {
 		url, body, header := call.Argument(0), call.Argument(1), call.Argument(1)
 		return *def_request(client, "GET", &url, &body, &header)
 	})
-	return obj
+	return val
 }
 
 func def_request(client *http.Client, method string, url, body, header *otto.Value) *otto.Value {

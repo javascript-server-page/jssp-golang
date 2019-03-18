@@ -4,7 +4,10 @@ import (
 	"github.com/robertkrimen/otto"
 )
 
-func GenerateObjFile(jse *JsEngine) *otto.Object {
-	obj := jse.CreateObject()
-	return obj
+func GenerateObjFile(jse *JsEngine) *otto.Value {
+	val, obj := jse.CreateObject()
+	obj.Set("open", func(call otto.FunctionCall) otto.Value {
+		return otto.Value{}
+	})
+	return val
 }
