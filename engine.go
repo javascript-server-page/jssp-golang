@@ -21,9 +21,9 @@ func (e *JsEngine) Run(src interface{}) (fmt.Stringer, error) {
 	return e.Otto.Run(src)
 }
 
-func (e *JsEngine) CreateObject() *otto.Object {
-	obj, _ := e.Object("({})")
-	return obj
+func (e *JsEngine) CreateObject() (*otto.Value, *otto.Object) {
+	val, _ := e.Otto.Run("({})")
+	return &val, val.Object()
 }
 
 const cache_max = 500
@@ -70,11 +70,5 @@ func GenerateJsspEnv(w http.ResponseWriter, r *http.Request) *JsEngine {
 	jse := GetJsEngine()
 	jse.Set("req", GenerateObjReq(jse, r))
 	jse.Set("res", GenerateObjRes(jse, w))
-	jse.Set("echo", func(call otto.FunctionCall) otto.Value {
-		for _, e := range call.ArgumentList {
-			w.Write([]byte(e.String()))
-		}
-		return otto.Value{}
-	})
 	return jse
 }
