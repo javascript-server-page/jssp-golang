@@ -14,6 +14,11 @@ func GenerateObjHttp(jse *JsEngine) *otto.Value {
 		res, err := def_request(client, "GET", &url, &body, &header)
 		return *build_response(jse, res, err)
 	})
+	obj.Set("post", func(call otto.FunctionCall) otto.Value {
+		url, body, header := call.Argument(0), call.Argument(1), call.Argument(1)
+		res, err := def_request(client, "POST", &url, &body, &header)
+		return *build_response(jse, res, err)
+	})
 	return val
 }
 
