@@ -38,7 +38,14 @@ func def_request(client *http.Client, method string, url, body, header *otto.Val
 }
 
 func build_response(jse *JsEngine, response *http.Response, err error) *otto.Value {
-	return nil
+	val, obj := jse.CreateObject()
+	if err != nil {
+		obj.Set("status", -1)
+		obj.Set("error", err.Error())
+	} else {
+		obj.Set("status", response.StatusCode)
+	}
+	return val
 }
 
 func convert_url_body(method string, url, params *otto.Value) (string, string, io.Reader) {
