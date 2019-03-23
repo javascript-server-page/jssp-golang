@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"github.com/robertkrimen/otto"
 	"io"
 	"net/http"
@@ -60,4 +61,23 @@ func build_response(jse *JsEngine, response *http.Response, err error) *otto.Val
 
 func convert_url_body(method string, url, params *otto.Value) (string, string, io.Reader) {
 	return method, "", nil
+}
+
+func params_string(params *otto.Value) *bytes.Buffer {
+	buf := &bytes.Buffer{}
+	if !params.IsObject() {
+		return buf
+	}
+	for _, k := range params.Object().Keys() {
+		v, e := params.Object().Get(k)
+		if e != nil {
+			continue
+		}
+		buf.WriteString(k)
+		buf.WriteByte('=')
+		buf.WriteString(v.String())
+		buf.WriteByte('&')
+	}
+	buf.Truncate(buf.Len() - 1)
+	return buf
 }
