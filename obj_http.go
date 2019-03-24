@@ -5,11 +5,12 @@ import (
 	"github.com/robertkrimen/otto"
 	"io"
 	"net/http"
+	"strings"
 )
 
-func GenerateObjHttp(jse *JsEngine) *otto.Value {
+func GenerateObjHttp(jse *JsEngine) *otto.Object {
 	client := &http.Client{}
-	val, obj := jse.CreateObject()
+	_, obj := jse.CreateObject()
 	obj.Set("get", func(call otto.FunctionCall) otto.Value {
 		url, body, header := call.Argument(0), call.Argument(1), call.Argument(1)
 		res, err := def_request(client, "GET", &url, &body, &header)
@@ -30,7 +31,7 @@ func GenerateObjHttp(jse *JsEngine) *otto.Value {
 		res, err := def_request(client, "PUT", &url, &body, &header)
 		return *build_response(jse, res, err)
 	})
-	return val
+	return obj
 }
 
 func def_request(client *http.Client, method string, url, body, header *otto.Value) (*http.Response, error) {
@@ -60,7 +61,17 @@ func build_response(jse *JsEngine, response *http.Response, err error) *otto.Val
 }
 
 func convert_url_body(method string, url, params *otto.Value) (string, string, io.Reader) {
-	return method, "", nil
+	u := url.String()
+	p := params_string(params)
+	if method == "POST" || method == "PUT" {
+		return method, u, p
+	}
+	if strings.LastIndex(u, "?") > 0 {
+		u = u + "&" + p.String()
+	} else {
+		u = u + "?" + p.String()
+	}
+	return method, u, strings.NewReader("")
 }
 
 func params_string(params *otto.Value) *bytes.Buffer {
