@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"github.com/robertkrimen/otto"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"strings"
 )
@@ -12,22 +13,22 @@ func GenerateObjHttp(jse *JsEngine) *otto.Object {
 	client := &http.Client{}
 	_, obj := jse.CreateObject()
 	obj.Set("get", func(call otto.FunctionCall) otto.Value {
-		url, body, header := call.Argument(0), call.Argument(1), call.Argument(1)
+		url, body, header := call.Argument(0), call.Argument(1), call.Argument(2)
 		res, err := def_request(client, "GET", &url, &body, &header)
 		return *build_response(jse, res, err)
 	})
 	obj.Set("head", func(call otto.FunctionCall) otto.Value {
-		url, body, header := call.Argument(0), call.Argument(1), call.Argument(1)
+		url, body, header := call.Argument(0), call.Argument(1), call.Argument(2)
 		res, err := def_request(client, "HEAD", &url, &body, &header)
 		return *build_response(jse, res, err)
 	})
 	obj.Set("post", func(call otto.FunctionCall) otto.Value {
-		url, body, header := call.Argument(0), call.Argument(1), call.Argument(1)
+		url, body, header := call.Argument(0), call.Argument(1), call.Argument(2)
 		res, err := def_request(client, "POST", &url, &body, &header)
 		return *build_response(jse, res, err)
 	})
 	obj.Set("put", func(call otto.FunctionCall) otto.Value {
-		url, body, header := call.Argument(0), call.Argument(1), call.Argument(1)
+		url, body, header := call.Argument(0), call.Argument(1), call.Argument(2)
 		res, err := def_request(client, "PUT", &url, &body, &header)
 		return *build_response(jse, res, err)
 	})
@@ -55,7 +56,9 @@ func build_response(jse *JsEngine, response *http.Response, err error) *otto.Val
 		obj.Set("status", -1)
 		obj.Set("error", err.Error())
 	} else {
+		data, _ := ioutil.ReadAll(response.Body)
 		obj.Set("status", response.StatusCode)
+		obj.Set("body", string(data))
 	}
 	return val
 }
@@ -89,6 +92,8 @@ func params_string(params *otto.Value) *bytes.Buffer {
 		buf.WriteString(v.String())
 		buf.WriteByte('&')
 	}
-	buf.Truncate(buf.Len() - 1)
+	if buf.Len() > 0 {
+		buf.Truncate(buf.Len() - 1)
+	}
 	return buf
 }
