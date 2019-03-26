@@ -5,8 +5,8 @@ import (
 	"net/http"
 )
 
-func GenerateObjRes(jse *JsEngine, w http.ResponseWriter) *otto.Value {
-	val, obj := jse.CreateObject()
+func GenerateObjRes(jse *JsEngine, w http.ResponseWriter) *otto.Object {
+	obj := jse.CreateObject()
 	jse.Set("echo", func(call otto.FunctionCall) otto.Value {
 		for _, e := range call.ArgumentList {
 			w.Write([]byte(e.String()))
@@ -20,5 +20,5 @@ func GenerateObjRes(jse *JsEngine, w http.ResponseWriter) *otto.Value {
 		w.Write([]byte("\n"))
 		return otto.Value{}
 	})
-	return val
+	return obj
 }

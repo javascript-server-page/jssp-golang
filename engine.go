@@ -21,10 +21,16 @@ func (e *JsEngine) Run(src interface{}) (fmt.Stringer, error) {
 	return e.Otto.Run(src)
 }
 
-func (e *JsEngine) CreateObject() (*otto.Value, *otto.Object) {
+func (e *JsEngine) CreateObject() *otto.Object {
 	val, _ := e.Otto.Run("({})")
-	return &val, val.Object()
+	return val.Object()
 }
+
+func (e *JsEngine) CreateObjectValue() *otto.Value {
+	val, _ := e.Otto.Run("({})")
+	return &val
+}
+
 
 const cache_max = 500
 

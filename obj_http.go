@@ -11,7 +11,7 @@ import (
 
 func GenerateObjHttp(jse *JsEngine) *otto.Object {
 	client := &http.Client{}
-	_, obj := jse.CreateObject()
+	obj := jse.CreateObject()
 	obj.Set("get", func(call otto.FunctionCall) otto.Value {
 		url, body, header := call.Argument(0), call.Argument(1), call.Argument(2)
 		res, err := def_request(client, "GET", &url, &body, &header)
@@ -51,7 +51,8 @@ func def_request(client *http.Client, method string, url, body, header *otto.Val
 }
 
 func build_response(jse *JsEngine, response *http.Response, err error) *otto.Value {
-	val, obj := jse.CreateObject()
+	val := jse.CreateObjectValue()
+	obj := val.Object()
 	if err != nil {
 		obj.Set("status", -1)
 		obj.Set("error", err.Error())

@@ -5,8 +5,8 @@ import (
 	"net/http"
 )
 
-func GenerateObjReq(jse *JsEngine, r *http.Request) *otto.Value {
-	val, obj := jse.CreateObject()
+func GenerateObjReq(jse *JsEngine, r *http.Request) *otto.Object {
+	obj := jse.CreateObject()
 	obj.Set("method", r.Method)
-	return val
+	return obj
 }
