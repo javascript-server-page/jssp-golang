@@ -60,6 +60,7 @@ func build_response(jse *JsEngine, response *http.Response, err error) *otto.Val
 		data, _ := ioutil.ReadAll(response.Body)
 		obj.Set("status", response.StatusCode)
 		obj.Set("body", string(data))
+		obj.Set("header", build_header(jse, response.Header))
 	}
 	return val
 }
@@ -97,4 +98,14 @@ func params_string(params *otto.Value) *bytes.Buffer {
 		buf.Truncate(buf.Len() - 1)
 	}
 	return buf
+}
+
+func build_header(jse *JsEngine, h http.Header) *otto.Value {
+	val := jse.CreateObjectValue()
+	obj := val.Object()
+	for k := range h {
+		v := h.Get(k)
+		obj.Set(k, v)
+	}
+	return val
 }
