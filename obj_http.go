@@ -100,12 +100,11 @@ func params_string(params *otto.Value) *bytes.Buffer {
 	return buf
 }
 
-func build_header(jse *JsEngine, h http.Header) *otto.Value {
-	val := jse.CreateObjectValue()
-	obj := val.Object()
+func build_header(jse *JsEngine, h http.Header) *otto.Object {
+	obj := jse.CreateObject()
 	for k := range h {
 		v := h.Get(k)
 		obj.Set(k, v)
 	}
-	return val
+	return obj
 }
