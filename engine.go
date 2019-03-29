@@ -31,6 +31,10 @@ func (e *JsEngine) CreateObjectValue() *otto.Value {
 	return &val
 }
 
+func (e *JsEngine) CreateString(s string) *otto.Value {
+	v, _ := e.ToValue(s)
+	return &v
+}
 
 const cache_max = 500
 
