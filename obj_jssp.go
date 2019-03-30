@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/robertkrimen/otto"
 	"os/exec"
+	"runtime"
 )
 
 func GenerateObjJssp(jse *JsEngine) *otto.Object {
@@ -30,5 +31,8 @@ func GenerateObjJssp(jse *JsEngine) *otto.Object {
 			return *jse.CreateString(string(res))
 		}
 	})
+	obj.Set("version", Server)
+	obj.Set("os", runtime.GOOS)
+	obj.Set("arch", runtime.GOARCH)
 	return obj
 }
