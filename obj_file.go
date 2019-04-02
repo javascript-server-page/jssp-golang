@@ -30,6 +30,21 @@ func GenerateObjFile(jse *JsEngine, fs http.Dir) *otto.Object {
 
 func build_file(jse *JsEngine, f *os.File) *otto.Value {
 	val := jse.CreateObjectValue()
-
+	obj := val.Object()
+	obj.Set("write", func(call otto.FunctionCall) otto.Value {
+		return otto.Value{}
+	})
+	obj.Set("read", func(call otto.FunctionCall) otto.Value {
+		return otto.Value{}
+	})
+	obj.Set("isdir", func(call otto.FunctionCall) otto.Value {
+		return otto.Value{}
+	})
+	obj.Set("parent", func(call otto.FunctionCall) otto.Value {
+		return otto.Value{}
+	})
+	obj.Set("children", func(call otto.FunctionCall) otto.Value {
+		return otto.Value{}
+	})
 	return val
 }
