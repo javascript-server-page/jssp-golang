@@ -13,6 +13,9 @@ func GenerateObjRes(jse *JsEngine, w http.ResponseWriter) *otto.Object {
 		}
 		return otto.Value{}
 	})
+	jse.Set("include", func(call otto.FunctionCall) otto.Value {
+		return otto.Value{}
+	})
 	obj.Set("print", func(call otto.FunctionCall) otto.Value {
 		if val := call.Argument(0); !val.IsUndefined() {
 			w.Write([]byte(val.String()))
