@@ -14,6 +14,11 @@ func GenerateObjFile(jse *JsEngine, dir string) *otto.Object {
 		f, _ := os.OpenFile(fn, os.O_RDWR, 0666)
 		return *build_file(jse, f)
 	})
+	obj.Set("opena", func(call otto.FunctionCall) otto.Value {
+		fn := call.Argument(0).String()
+		f, _ := os.OpenFile(fn, os.O_RDWR|os.O_APPEND, 0666)
+		return *build_file(jse, f)
+	})
 	obj.Set("create", func(call otto.FunctionCall) otto.Value {
 		return otto.Value{}
 	})
