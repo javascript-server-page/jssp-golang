@@ -20,7 +20,9 @@ func GenerateObjFile(jse *JsEngine, dir string) *otto.Object {
 		return *build_file(jse, f)
 	})
 	obj.Set("create", func(call otto.FunctionCall) otto.Value {
-		return otto.Value{}
+		fn := call.Argument(0).String()
+		f, _ := os.OpenFile(fn, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+		return *build_file(jse, f)
 	})
 	obj.Set("remove", func(call otto.FunctionCall) otto.Value {
 		return otto.Value{}
