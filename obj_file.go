@@ -27,6 +27,9 @@ func GenerateObjFile(jse *JsEngine, dir string) *otto.Object {
 	obj.Set("remove", func(call otto.FunctionCall) otto.Value {
 		return otto.Value{}
 	})
+	obj.Set("rename", func(call otto.FunctionCall) otto.Value {
+		return otto.Value{}
+	})
 	obj.Set("mkdir", func(call otto.FunctionCall) otto.Value {
 		return otto.Value{}
 	})
