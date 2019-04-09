@@ -10,18 +10,18 @@ import (
 func GenerateObjFile(jse *JsEngine, dir string) *otto.Object {
 	obj := jse.CreateObject()
 	obj.Set("open", func(call otto.FunctionCall) otto.Value {
-		fn := call.Argument(0).String()
-		f, _ := os.OpenFile(fn, os.O_RDWR, 0666)
+		p := call.Argument(0)
+		f := def_openfile(&p, dir, os.O_RDWR)
 		return *build_file(jse, f)
 	})
 	obj.Set("opena", func(call otto.FunctionCall) otto.Value {
-		fn := call.Argument(0).String()
-		f, _ := os.OpenFile(fn, os.O_RDWR|os.O_APPEND, 0666)
+		p := call.Argument(0)
+		f := def_openfile(&p, dir, os.O_RDWR|os.O_APPEND)
 		return *build_file(jse, f)
 	})
 	obj.Set("create", func(call otto.FunctionCall) otto.Value {
-		fn := call.Argument(0).String()
-		f, _ := os.OpenFile(fn, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+		p := call.Argument(0)
+		f := def_openfile(&p, dir, os.O_RDWR|os.O_CREATE|os.O_TRUNC)
 		return *build_file(jse, f)
 	})
 	obj.Set("remove", func(call otto.FunctionCall) otto.Value {
@@ -34,6 +34,15 @@ func GenerateObjFile(jse *JsEngine, dir string) *otto.Object {
 		return otto.Value{}
 	})
 	return obj
+}
+
+func def_openfile(v *otto.Value, dir string, flag int) *os.File {
+	if v.IsUndefined() {
+		return nil
+	} else {
+		f, _ := os.OpenFile(v.String(), flag, 0666)
+		return f
+	}
 }
 
 func build_file(jse *JsEngine, f *os.File) *otto.Value {
