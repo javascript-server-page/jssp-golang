@@ -4,10 +4,10 @@ import (
 	"github.com/robertkrimen/otto"
 	"os"
 	"path"
-	"path/filepath"
 )
 
-func GenerateObjFile(jse *JsEngine, dir string) *otto.Object {
+func GenerateObjFile(jse *JsEngine, jspath string) *otto.Object {
+	dir, _ := path.Split(jspath)
 	obj := jse.CreateObject()
 	obj.Set("open", func(call otto.FunctionCall) otto.Value {
 		p := call.Argument(0)
@@ -74,11 +74,4 @@ func build_file(jse *JsEngine, f *os.File, err error) *otto.Value {
 		return otto.Value{}
 	})
 	return val
-}
-
-func def_getfullname(dir, name string) string {
-	if dir == "" {
-		dir = "."
-	}
-	return filepath.Join(dir, filepath.FromSlash(path.Clean("/"+name)))
 }
