@@ -13,30 +13,28 @@ func GenerateObjHttp(jse *JsEngine) *otto.Object {
 	client := &http.Client{}
 	obj := jse.CreateObject()
 	obj.Set("get", func(call otto.FunctionCall) otto.Value {
-		url, body, header := call.Argument(0), call.Argument(1), call.Argument(2)
-		res, err := def_request(client, "GET", &url, &body, &header)
+		res, err := def_request(client, "GET", &call)
 		return *build_response(jse, res, err)
 	})
 	obj.Set("head", func(call otto.FunctionCall) otto.Value {
-		url, body, header := call.Argument(0), call.Argument(1), call.Argument(2)
-		res, err := def_request(client, "HEAD", &url, &body, &header)
+		res, err := def_request(client, "HEAD", &call)
 		return *build_response(jse, res, err)
 	})
 	obj.Set("post", func(call otto.FunctionCall) otto.Value {
-		url, body, header := call.Argument(0), call.Argument(1), call.Argument(2)
-		res, err := def_request(client, "POST", &url, &body, &header)
+		res, err := def_request(client, "POST", &call)
 		return *build_response(jse, res, err)
 	})
 	obj.Set("put", func(call otto.FunctionCall) otto.Value {
-		url, body, header := call.Argument(0), call.Argument(1), call.Argument(2)
-		res, err := def_request(client, "PUT", &url, &body, &header)
+		res, err := def_request(client, "PUT", &call)
 		return *build_response(jse, res, err)
 	})
 	return obj
 }
 
-func def_request(client *http.Client, method string, url, body, header *otto.Value) (*http.Response, error) {
-	req, err := http.NewRequest(convert_url_body(method, url, body))
+// http request method
+func def_request(client *http.Client, method string, call *otto.FunctionCall) (*http.Response, error) {
+	url, body, header := call.Argument(0), call.Argument(1), call.Argument(2)
+	req, err := http.NewRequest(convert_url_body(method, &url, &body))
 	if err != nil {
 		return nil, err
 	}
@@ -50,6 +48,7 @@ func def_request(client *http.Client, method string, url, body, header *otto.Val
 	return client.Do(req)
 }
 
+// build  jssp.Response object with *http.Response and error
 func build_response(jse *JsEngine, response *http.Response, err error) *otto.Value {
 	val := jse.CreateObjectValue()
 	obj := val.Object()
@@ -65,6 +64,7 @@ func build_response(jse *JsEngine, response *http.Response, err error) *otto.Val
 	return val
 }
 
+// generate the http request parameters
 func convert_url_body(method string, url, params *otto.Value) (string, string, io.Reader) {
 	u := url.String()
 	p := params_string(params)
@@ -79,6 +79,7 @@ func convert_url_body(method string, url, params *otto.Value) (string, string, i
 	return method, u, strings.NewReader("")
 }
 
+// convert key-value pairs to http parameters
 func params_string(params *otto.Value) *bytes.Buffer {
 	buf := &bytes.Buffer{}
 	if !params.IsObject() {
@@ -100,6 +101,7 @@ func params_string(params *otto.Value) *bytes.Buffer {
 	return buf
 }
 
+// build an uneditable jssp.header object
 func build_header(jse *JsEngine, h http.Header) *otto.Object {
 	obj := jse.CreateObject()
 	for k := range h {
