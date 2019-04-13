@@ -110,3 +110,27 @@ func build_header(jse *JsEngine, h http.Header) *otto.Object {
 	}
 	return obj
 }
+
+// build an editable jssp.header object
+func build_editableheader(jse *JsEngine, h http.Header) *otto.Object {
+	obj := jse.CreateObject()
+	obj.Set("get", func(call otto.FunctionCall) otto.Value {
+		return *jse.CreateString(h.Get(call.Argument(0).String()))
+	})
+	obj.Set("set", func(call otto.FunctionCall) otto.Value {
+		key := call.Argument(0).String()
+		pre := *jse.CreateString(h.Get(key))
+		h.Set(key, call.Argument(1).String())
+		return pre
+	})
+	obj.Set("map", func(call otto.FunctionCall) otto.Value {
+		val := jse.CreateObjectValue()
+		obj := val.Object()
+		for k := range h {
+			v := h.Get(k)
+			obj.Set(k, v)
+		}
+		return *val
+	})
+	return obj
+}
