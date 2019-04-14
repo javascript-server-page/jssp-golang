@@ -39,6 +39,15 @@ func GenerateObjFile(jse *JsEngine, jspath string) *otto.Object {
 	return obj
 }
 
+// execute (func(string) error) by js calling the parameter
+func def_invokefunc(jse *JsEngine, call otto.FunctionCall, fun func(string) error) *otto.Value {
+	p := call.Argument(0)
+	if p.IsUndefined() {
+		return &p
+	}
+	return jse.CreateError(fun(p.String()))
+}
+
 func def_openfile(v *otto.Value, dir string, flag int) (*os.File, error) {
 	if v.IsUndefined() {
 		return nil, nil
