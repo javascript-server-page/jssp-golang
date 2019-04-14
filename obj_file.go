@@ -24,18 +24,22 @@ func GenerateObjFile(jse *JsEngine, jspath string) *otto.Object {
 		f, err := def_openfile(&p, dir, os.O_RDWR|os.O_CREATE|os.O_TRUNC)
 		return *build_file(jse, f, err)
 	})
+	obj.Set("mkdir", func(call otto.FunctionCall) otto.Value {
+		return *def_invokefunc(jse, call, func(s string) error { return os.Mkdir(s, 0666) })
+	})
+	obj.Set("mkdirall", func(call otto.FunctionCall) otto.Value {
+		return *def_invokefunc(jse, call, func(s string) error { return os.MkdirAll(s, 0666) })
+	})
 	obj.Set("remove", func(call otto.FunctionCall) otto.Value {
-		return otto.Value{}
+		return *def_invokefunc(jse, call, os.Remove)
+	})
+	obj.Set("removeall", func(call otto.FunctionCall) otto.Value {
+		return *def_invokefunc(jse, call, os.RemoveAll)
 	})
 	obj.Set("rename", func(call otto.FunctionCall) otto.Value {
 		return otto.Value{}
 	})
-	obj.Set("mkdir", func(call otto.FunctionCall) otto.Value {
-		return otto.Value{}
-	})
-	obj.Set("rmdir", func(call otto.FunctionCall) otto.Value {
-		return otto.Value{}
-	})
+
 	return obj
 }
 
