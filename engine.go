@@ -36,6 +36,13 @@ func (e *JsEngine) CreateString(s string) *otto.Value {
 	return &v
 }
 
+func (e *JsEngine) CreateError(err error) *otto.Value {
+	if err != nil {
+		return e.CreateString(err.Error())
+	}
+	return &otto.Value{}
+}
+
 const cache_max = 500
 
 var mutex = new(sync.Mutex)
