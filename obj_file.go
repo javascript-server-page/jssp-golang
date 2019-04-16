@@ -10,19 +10,13 @@ func GenerateObjFile(jse *JsEngine, jspath string) *otto.Object {
 	dir, _ := path.Split(jspath)
 	obj := jse.CreateObject()
 	obj.Set("open", func(call otto.FunctionCall) otto.Value {
-		p := call.Argument(0)
-		f, err := def_openfile(&p, dir, os.O_RDWR)
-		return *build_file(jse, f, err)
+		return *def_openfile(jse, &call, dir, os.O_RDWR)
 	})
 	obj.Set("opena", func(call otto.FunctionCall) otto.Value {
-		p := call.Argument(0)
-		f, err := def_openfile(&p, dir, os.O_RDWR|os.O_APPEND)
-		return *build_file(jse, f, err)
+		return *def_openfile(jse, &call, dir, os.O_RDWR|os.O_APPEND)
 	})
 	obj.Set("create", func(call otto.FunctionCall) otto.Value {
-		p := call.Argument(0)
-		f, err := def_openfile(&p, dir, os.O_RDWR|os.O_CREATE|os.O_TRUNC)
-		return *build_file(jse, f, err)
+		return *def_openfile(jse, &call, dir, os.O_RDWR|os.O_CREATE|os.O_TRUNC)
 	})
 	obj.Set("mkdir", func(call otto.FunctionCall) otto.Value {
 		return *def_invokefunc(jse, call, func(s string) error { return os.Mkdir(s, 0666) })
@@ -43,31 +37,15 @@ func GenerateObjFile(jse *JsEngine, jspath string) *otto.Object {
 	return obj
 }
 
-// execute (func(string) error) by js calling the parameter
-func def_invokefunc(jse *JsEngine, call otto.FunctionCall, fun func(string) error) *otto.Value {
+// get jssp.file object
+func def_openfile(jse *JsEngine, call *otto.FunctionCall, dir string, flag int) *otto.Value {
 	p := call.Argument(0)
 	if p.IsUndefined() {
 		return &p
 	}
-	return jse.CreateError(fun(p.String()))
-}
-
-func def_openfile(v *otto.Value, dir string, flag int) (*os.File, error) {
-	if v.IsUndefined() {
-		return nil, nil
-	} else {
-		f, err := os.OpenFile(v.String(), flag, 0666)
-		return f, err
-	}
-}
-
-func build_file(jse *JsEngine, f *os.File, err error) *otto.Value {
-	if f == nil {
-		if err != nil {
-			return &otto.Value{}
-		} else {
-			return &otto.Value{}
-		}
+	f, err := os.OpenFile(p.String(), flag, 0666)
+	if err != nil {
+		jse.CreateError(err)
 	}
 	val := jse.CreateObjectValue()
 	obj := val.Object()
@@ -86,5 +64,18 @@ func build_file(jse *JsEngine, f *os.File, err error) *otto.Value {
 	obj.Set("children", func(call otto.FunctionCall) otto.Value {
 		return otto.Value{}
 	})
+	obj.Set("close", func(call otto.FunctionCall) otto.Value {
+		f.Close()
+		return otto.Value{}
+	})
 	return val
+}
+
+// execute (func(string) error) by js calling the parameter
+func def_invokefunc(jse *JsEngine, call otto.FunctionCall, fun func(string) error) *otto.Value {
+	p := call.Argument(0)
+	if p.IsUndefined() {
+		return &p
+	}
+	return jse.CreateError(fun(p.String()))
 }
