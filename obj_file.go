@@ -4,10 +4,14 @@ import (
 	"github.com/robertkrimen/otto"
 	"os"
 	"path"
+	"path/filepath"
 )
 
 func GenerateObjFile(jse *JsEngine, jspath string) *otto.Object {
 	dir, _ := path.Split(jspath)
+	if dir == "/" {
+		dir = "./"
+	}
 	obj := jse.CreateObject()
 	obj.Set("open", func(call otto.FunctionCall) otto.Value {
 		return *def_openfile(jse, &call, dir, os.O_RDWR)
@@ -43,7 +47,7 @@ func def_openfile(jse *JsEngine, call *otto.FunctionCall, dir string, flag int) 
 	if p.IsUndefined() {
 		return &p
 	}
-	f, err := os.OpenFile(p.String(), flag, 0666)
+	f, err := os.OpenFile(filepath.Join(dir, p.String()), flag, 0666)
 	if err != nil {
 		jse.CreateError(err)
 	}
@@ -65,8 +69,7 @@ func def_openfile(jse *JsEngine, call *otto.FunctionCall, dir string, flag int) 
 		return otto.Value{}
 	})
 	obj.Set("close", func(call otto.FunctionCall) otto.Value {
-		f.Close()
-		return otto.Value{}
+		return *jse.CreateError(f.Close())
 	})
 	return val
 }

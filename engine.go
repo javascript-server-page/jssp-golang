@@ -66,7 +66,6 @@ func generate() {
 
 func NewJsEngine() *JsEngine {
 	js := &JsEngine{otto.New()}
-	js.Set("file", GenerateObjFile(js))
 	js.Set("http", GenerateObjHttp(js))
 	js.Set("jsdo", GenerateObjJsdo(js))
 	js.Set("jssp", GenerateObjJssp(js))
@@ -85,6 +84,7 @@ func GetJsEngine() *JsEngine {
 
 func GenerateJsspEnv(w http.ResponseWriter, r *http.Request) *JsEngine {
 	jse := GetJsEngine()
+	jse.Set("file", GenerateObjFile(jse, r.RequestURI))
 	jse.Set("req", GenerateObjReq(jse, r))
 	jse.Set("res", GenerateObjRes(jse, w))
 	return jse
