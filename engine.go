@@ -84,7 +84,7 @@ func GetJsEngine() *JsEngine {
 
 func GenerateJsspEnv(w http.ResponseWriter, r *http.Request) *JsEngine {
 	jse := GetJsEngine()
-	jse.Set("file", GenerateObjFile(jse, r.RequestURI))
+	jse.Set("file", GenerateObjFile(jse, "." + r.RequestURI))
 	jse.Set("req", GenerateObjReq(jse, r))
 	jse.Set("res", GenerateObjRes(jse, w))
 	return jse

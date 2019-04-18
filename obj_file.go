@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/robertkrimen/otto"
+	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -9,9 +10,6 @@ import (
 
 func GenerateObjFile(jse *JsEngine, jspath string) *otto.Object {
 	dir, _ := path.Split(jspath)
-	if dir == "/" {
-		dir = "./"
-	}
 	obj := jse.CreateObject()
 	obj.Set("open", func(call otto.FunctionCall) otto.Value {
 		return *def_openfile(jse, &call, dir, os.O_RDWR)
@@ -47,17 +45,25 @@ func def_openfile(jse *JsEngine, call *otto.FunctionCall, dir string, flag int) 
 	if p.IsUndefined() {
 		return &p
 	}
-	f, err := os.OpenFile(filepath.Join(dir, p.String()), flag, 0666)
+	name := filepath.Join(dir, p.String())
+	f, err := os.OpenFile(name, flag, 0666)
 	if err != nil {
-		jse.CreateError(err)
+		return jse.CreateError(err)
 	}
 	val := jse.CreateObjectValue()
 	obj := val.Object()
 	obj.Set("write", func(call otto.FunctionCall) otto.Value {
-		return otto.Value{}
+		return *def_invokefunc(jse, call, func(s string) error {
+			_, err := f.WriteString(s)
+			return err
+		})
 	})
 	obj.Set("read", func(call otto.FunctionCall) otto.Value {
-		return otto.Value{}
+		data, err := ioutil.ReadAll(f)
+		if err != nil {
+			return *jse.CreateError(err)
+		}
+		return *jse.CreateString(string(data))
 	})
 	obj.Set("isdir", func(call otto.FunctionCall) otto.Value {
 		return otto.Value{}
