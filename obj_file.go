@@ -46,6 +46,11 @@ func def_openfile(jse *JsEngine, call *otto.FunctionCall, dir string, flag int) 
 		return &p
 	}
 	name := filepath.Join(dir, p.String())
+	return def_openfilebyname(jse, name, flag)
+}
+
+// get jssp.file object
+func def_openfilebyname(jse *JsEngine, name string, flag int) *otto.Value {
 	f, err := os.OpenFile(name, flag, 0666)
 	if err != nil {
 		return jse.CreateError(err)
@@ -79,6 +84,7 @@ func def_openfile(jse *JsEngine, call *otto.FunctionCall, dir string, flag int) 
 	})
 	return val
 }
+
 
 // execute (func(string) error) by js calling the parameter
 func def_invokefunc(jse *JsEngine, call otto.FunctionCall, fun func(string) error) *otto.Value {
