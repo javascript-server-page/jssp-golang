@@ -74,7 +74,7 @@ func def_openfilebyname(jse *JsEngine, name string, flag int) *otto.Value {
 		return otto.Value{}
 	})
 	obj.Set("parent", func(call otto.FunctionCall) otto.Value {
-		return otto.Value{}
+		return *def_openfilebyname(jse, path.Base(name), flag)
 	})
 	obj.Set("children", func(call otto.FunctionCall) otto.Value {
 		return otto.Value{}
@@ -84,7 +84,6 @@ func def_openfilebyname(jse *JsEngine, name string, flag int) *otto.Value {
 	})
 	return val
 }
-
 
 // execute (func(string) error) by js calling the parameter
 func def_invokefunc(jse *JsEngine, call otto.FunctionCall, fun func(string) error) *otto.Value {
