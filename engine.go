@@ -36,6 +36,11 @@ func (e *JsEngine) CreateString(s string) *otto.Value {
 	return &v
 }
 
+func (e *JsEngine) CreateArray() *otto.Value {
+	val, _ := e.Otto.Run("[]")
+	return &val
+}
+
 func (e *JsEngine) CreateError(err error) *otto.Value {
 	if err != nil {
 		return e.CreateString(err.Error())
@@ -84,7 +89,7 @@ func GetJsEngine() *JsEngine {
 
 func GenerateJsspEnv(w http.ResponseWriter, r *http.Request) *JsEngine {
 	jse := GetJsEngine()
-	jse.Set("file", GenerateObjFile(jse, "." + r.RequestURI))
+	jse.Set("file", GenerateObjFile(jse, "."+r.RequestURI))
 	jse.Set("req", GenerateObjReq(jse, r))
 	jse.Set("res", GenerateObjRes(jse, w))
 	return jse

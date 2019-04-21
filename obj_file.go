@@ -77,7 +77,16 @@ func def_openfilebyname(jse *JsEngine, name string, flag int) *otto.Value {
 		return *def_openfilebyname(jse, path.Base(name), flag)
 	})
 	obj.Set("children", func(call otto.FunctionCall) otto.Value {
-		return otto.Value{}
+		fis, err := f.Readdir(-1)
+		if err != nil {
+			return *jse.CreateError(err)
+		}
+		arrval := jse.CreateArray()
+		arr := arrval.Object()
+		for _, fi := range fis {
+			arr.Call("push", def_openfilebyname(jse, fi.Name(), flag).Object())
+		}
+		return *arrval
 	})
 	obj.Set("close", func(call otto.FunctionCall) otto.Value {
 		return *jse.CreateError(f.Close())
