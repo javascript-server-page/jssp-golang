@@ -70,23 +70,11 @@ func def_openfilebyname(jse *JsEngine, name string, flag int) *otto.Value {
 		}
 		return *jse.CreateString(string(data))
 	})
-	obj.Set("isdir", func(call otto.FunctionCall) otto.Value {
-		return otto.Value{}
+	obj.Set("info", func(call otto.FunctionCall) otto.Value {
+		return *build_fileinfo(jse, f)
 	})
 	obj.Set("parent", func(call otto.FunctionCall) otto.Value {
-		return *def_openfilebyname(jse, path.Base(name), flag)
-	})
-	obj.Set("children", func(call otto.FunctionCall) otto.Value {
-		fis, err := f.Readdir(-1)
-		if err != nil {
-			return *jse.CreateError(err)
-		}
-		arrval := jse.CreateArray()
-		arr := arrval.Object()
-		for _, fi := range fis {
-			arr.Call("push", def_openfilebyname(jse, fi.Name(), flag).Object())
-		}
-		return *arrval
+		return *jse.CreateString(path.Base(name))
 	})
 	obj.Set("close", func(call otto.FunctionCall) otto.Value {
 		return *jse.CreateError(f.Close())
@@ -101,4 +89,13 @@ func def_invokefunc(jse *JsEngine, call otto.FunctionCall, fun func(string) erro
 		return &p
 	}
 	return jse.CreateError(fun(p.String()))
+}
+
+// build jssp.fileinfo by os.FileInfo
+func build_fileinfo(jse *JsEngine, f *os.File) *otto.Value {
+	_, err := f.Stat()
+	if err != nil {
+		return jse.CreateError(err)
+	}
+	return nil
 }
