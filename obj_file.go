@@ -32,10 +32,6 @@ func GenerateObjFile(jse *JsEngine, jspath string) *otto.Object {
 	obj.Set("removeall", func(call otto.FunctionCall) otto.Value {
 		return *def_invokefunc(jse, call, os.RemoveAll)
 	})
-	obj.Set("rename", func(call otto.FunctionCall) otto.Value {
-		return otto.Value{}
-	})
-
 	return obj
 }
 
@@ -78,6 +74,15 @@ func def_openfilebyname(jse *JsEngine, name string, flag int) *otto.Value {
 	})
 	obj.Set("close", func(call otto.FunctionCall) otto.Value {
 		return *jse.CreateError(f.Close())
+	})
+	obj.Set("move", func(call otto.FunctionCall) otto.Value {
+		return *def_invokefunc(jse, call, func(newName string) error {
+			err := os.Rename(name, newName)
+			if err == nil {
+				name = newName
+			}
+			return err
+		})
 	})
 	return val
 }
