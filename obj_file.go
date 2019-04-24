@@ -21,16 +21,16 @@ func GenerateObjFile(jse *JsEngine, jspath string) *otto.Object {
 		return *def_openfile(jse, &call, dir, os.O_RDWR|os.O_CREATE|os.O_TRUNC)
 	})
 	obj.Set("mkdir", func(call otto.FunctionCall) otto.Value {
-		return *def_invokefunc(jse, call, func(s string) error { return os.Mkdir(s, 0666) })
+		return *def_invokefunc_error(jse, call, func(s string) error { return os.Mkdir(s, 0666) })
 	})
 	obj.Set("mkdirall", func(call otto.FunctionCall) otto.Value {
-		return *def_invokefunc(jse, call, func(s string) error { return os.MkdirAll(s, 0666) })
+		return *def_invokefunc_error(jse, call, func(s string) error { return os.MkdirAll(s, 0666) })
 	})
 	obj.Set("remove", func(call otto.FunctionCall) otto.Value {
-		return *def_invokefunc(jse, call, os.Remove)
+		return *def_invokefunc_error(jse, call, os.Remove)
 	})
 	obj.Set("removeall", func(call otto.FunctionCall) otto.Value {
-		return *def_invokefunc(jse, call, os.RemoveAll)
+		return *def_invokefunc_error(jse, call, os.RemoveAll)
 	})
 	return obj
 }
@@ -54,7 +54,7 @@ func def_openfilebyname(jse *JsEngine, name string, flag int) *otto.Value {
 	val := jse.CreateObjectValue()
 	obj := val.Object()
 	obj.Set("write", func(call otto.FunctionCall) otto.Value {
-		return *def_invokefunc(jse, call, func(s string) error {
+		return *def_invokefunc_error(jse, call, func(s string) error {
 			_, err := f.WriteString(s)
 			return err
 		})
@@ -76,7 +76,7 @@ func def_openfilebyname(jse *JsEngine, name string, flag int) *otto.Value {
 		return *jse.CreateError(f.Close())
 	})
 	obj.Set("move", func(call otto.FunctionCall) otto.Value {
-		return *def_invokefunc(jse, call, func(newName string) error {
+		return *def_invokefunc_error(jse, call, func(newName string) error {
 			err := os.Rename(name, newName)
 			if err == nil {
 				name = newName
@@ -88,12 +88,21 @@ func def_openfilebyname(jse *JsEngine, name string, flag int) *otto.Value {
 }
 
 // execute (func(string) error) by js calling the parameter
-func def_invokefunc(jse *JsEngine, call otto.FunctionCall, fun func(string) error) *otto.Value {
+func def_invokefunc_error(jse *JsEngine, call otto.FunctionCall, fun func(string) error) *otto.Value {
 	p := call.Argument(0)
 	if p.IsUndefined() {
 		return &p
 	}
 	return jse.CreateError(fun(p.String()))
+}
+
+// execute (func(string) error) by js calling the parameter
+func def_invokefunc_value(jse *JsEngine, call otto.FunctionCall, fun func(string) *otto.Value) *otto.Value {
+	p := call.Argument(0)
+	if p.IsUndefined() {
+		return &p
+	}
+	return fun(p.String())
 }
 
 // build jssp.fileinfo by os.FileInfo
