@@ -32,6 +32,19 @@ func GenerateObjFile(jse *JsEngine, jspath string) *otto.Object {
 	obj.Set("removeall", func(call otto.FunctionCall) otto.Value {
 		return *def_invokefunc_error(jse, call, os.RemoveAll)
 	})
+	obj.Set("readdir", func(call otto.FunctionCall) otto.Value {
+		return *def_invokefunc_value(call, func(dirname string) *otto.Value {
+			fis, err := ioutil.ReadDir(dirname)
+			if err != nil {
+				return jse.CreateError(err)
+			}
+			val := jse.CreateArray()
+			for _, fi := range fis {
+				val.Object().Call("push", fi.Name())
+			}
+			return val
+		})
+	})
 	return obj
 }
 
@@ -96,8 +109,8 @@ func def_invokefunc_error(jse *JsEngine, call otto.FunctionCall, fun func(string
 	return jse.CreateError(fun(p.String()))
 }
 
-// execute (func(string) error) by js calling the parameter
-func def_invokefunc_value(jse *JsEngine, call otto.FunctionCall, fun func(string) *otto.Value) *otto.Value {
+// execute (func(string) *otto.Value) by js calling the parameter
+func def_invokefunc_value(call otto.FunctionCall, fun func(string) *otto.Value) *otto.Value {
 	p := call.Argument(0)
 	if p.IsUndefined() {
 		return &p
