@@ -43,7 +43,10 @@ func (e *JsEngine) CreateArray() *otto.Value {
 
 func (e *JsEngine) CreateError(err error) *otto.Value {
 	if err != nil {
-		return e.CreateString(err.Error())
+		val, err := e.Call("Error", e, err.Error())
+		if err == nil {
+			return &val
+		}
 	}
 	return &otto.Value{}
 }
