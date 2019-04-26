@@ -15,7 +15,25 @@ func GenerateObjRes(jse *JsEngine, w http.ResponseWriter) *otto.Object {
 		return otto.Value{}
 	})
 	jse.Set("include", func(call otto.FunctionCall) otto.Value {
-		return otto.Value{}
+		file, err := jse.Get("file")
+		if err != nil {
+			return *jse.CreateError(err)
+		}
+		f, err := file.Object().Call("open", call.Argument(0))
+		if err != nil {
+			return *jse.CreateError(err)
+		}
+		defer f.Object().Call("close")
+		src, err := f.Object().Call("read")
+		if err != nil {
+			return *jse.CreateError(err)
+		}
+		str, err := jse.Run(src.String())
+		if err != nil {
+			return *jse.CreateError(err)
+		} else {
+			return *jse.CreateString(str.String())
+		}
 	})
 	return obj
 }
