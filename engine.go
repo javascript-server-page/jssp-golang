@@ -51,6 +51,18 @@ func (e *JsEngine) CreateError(err error) *otto.Value {
 	return &otto.Value{}
 }
 
+func (e *JsEngine) CreateAny(any interface{}) *otto.Value {
+	if any == nil {
+		null := otto.NullValue()
+		return &null
+	}
+	v, err := e.ToValue(any)
+	if err != nil {
+		return e.CreateError(err)
+	}
+	return &v
+}
+
 const cache_max = 500
 
 var mutex = new(sync.Mutex)
