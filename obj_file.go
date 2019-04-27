@@ -120,9 +120,26 @@ func def_invokefunc_value(call otto.FunctionCall, fun func(string) *otto.Value) 
 
 // build jssp.fileinfo by os.FileInfo
 func build_fileinfo(jse *JsEngine, f *os.File) *otto.Value {
-	_, err := f.Stat()
+	fi, err := f.Stat()
 	if err != nil {
 		return jse.CreateError(err)
 	}
-	return nil
+	val := jse.CreateObjectValue()
+	obj := val.Object()
+	obj.Set("name", func(call otto.FunctionCall) otto.Value {
+		return *jse.CreateString(fi.Name())
+	})
+	obj.Set("size", func(call otto.FunctionCall) otto.Value {
+		return *jse.CreateAny(fi.Size())
+	})
+	obj.Set("mode", func(call otto.FunctionCall) otto.Value {
+		return *jse.CreateString(fi.Mode().String())
+	})
+	obj.Set("time", func(call otto.FunctionCall) otto.Value {
+		return *jse.CreateAny(fi.ModTime())
+	})
+	obj.Set("isdir", func(call otto.FunctionCall) otto.Value {
+		return *jse.CreateAny(fi.IsDir())
+	})
+	return val
 }
