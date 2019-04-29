@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/robertkrimen/otto"
+	"mime"
 	"net/http"
 	"strings"
 )
@@ -9,6 +10,15 @@ import (
 func GenerateObjRes(jse *JsEngine, w http.ResponseWriter) *otto.Object {
 	obj := jse.CreateObject()
 	obj.Set("header", build_editableheader(jse, w.Header()))
+	jse.Set("type", func(call otto.FunctionCall) otto.Value {
+		fval := call.Argument(0)
+		if fval.IsUndefined() {
+			return fval
+		}
+		ct := mime.TypeByExtension("." + fval.String())
+		w.Header().Set("Content-Type", ct)
+		return otto.Value{}
+	})
 	jse.Set("echo", func(call otto.FunctionCall) otto.Value {
 		for _, e := range call.ArgumentList {
 			w.Write([]byte(e.String()))
