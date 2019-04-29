@@ -11,8 +11,10 @@ func getFile(fs http.FileSystem, name string) http.File {
 	if err != nil {
 		return nil
 	}
+
 	stat, err := f.Stat()
 	if err != nil {
+		f.Close()
 		return nil
 	}
 	if stat.IsDir() {
