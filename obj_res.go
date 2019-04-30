@@ -8,9 +8,18 @@ import (
 )
 
 func GenerateObjRes(jse *JsEngine, w http.ResponseWriter) *otto.Object {
+	jse.Set("echo", func(call otto.FunctionCall) otto.Value {
+		for _, e := range call.ArgumentList {
+			str := e.String()
+			if len(str) > 0 {
+				w.Write([]byte(str))
+			}
+		}
+		return otto.Value{}
+	})
 	obj := jse.CreateObject()
 	obj.Set("header", build_editableheader(jse, w.Header()))
-	jse.Set("type", func(call otto.FunctionCall) otto.Value {
+	obj.Set("type", func(call otto.FunctionCall) otto.Value {
 		fval := call.Argument(0)
 		if fval.IsUndefined() {
 			return fval
@@ -19,13 +28,7 @@ func GenerateObjRes(jse *JsEngine, w http.ResponseWriter) *otto.Object {
 		w.Header().Set("Content-Type", ct)
 		return otto.Value{}
 	})
-	jse.Set("echo", func(call otto.FunctionCall) otto.Value {
-		for _, e := range call.ArgumentList {
-			w.Write([]byte(e.String()))
-		}
-		return otto.Value{}
-	})
-	jse.Set("include", func(call otto.FunctionCall) otto.Value {
+	obj.Set("include", func(call otto.FunctionCall) otto.Value {
 		file, err := jse.Get("file")
 		if err != nil {
 			return *jse.CreateError(err)
