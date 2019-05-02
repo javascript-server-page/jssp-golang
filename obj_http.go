@@ -115,12 +115,25 @@ func build_header(jse *JsEngine, h http.Header) *otto.Object {
 func build_editableheader(jse *JsEngine, h http.Header) *otto.Object {
 	obj := jse.CreateObject()
 	obj.Set("get", func(call otto.FunctionCall) otto.Value {
-		return *jse.CreateString(h.Get(call.Argument(0).String()))
+		val := call.Argument(0)
+		if val.IsUndefined() {
+			return val
+		}
+		return *jse.CreateString(h.Get(val.String()))
 	})
 	obj.Set("set", func(call otto.FunctionCall) otto.Value {
-		key := call.Argument(0).String()
-		pre := *jse.CreateString(h.Get(key))
-		h.Set(key, call.Argument(1).String())
+		key := call.Argument(0)
+		if key.IsUndefined() || key.IsNull() {
+			return key
+		}
+		val := call.Argument(1)
+		if val.IsUndefined() || val.IsNull() {
+			h.Del(key.String())
+			return val
+		}
+		keystr := key.String()
+		pre := *jse.CreateString(h.Get(keystr))
+		h.Set(keystr, val.String())
 		return pre
 	})
 	obj.Set("map", func(call otto.FunctionCall) otto.Value {
