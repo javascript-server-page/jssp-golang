@@ -12,7 +12,7 @@ func GenerateObjJssp(jse *JsEngine) *otto.Object {
 		if len(call.ArgumentList) == 0 {
 			return otto.UndefinedValue()
 		}
-		return *jse.CreateString(def_exec(call))
+		return *jse.CreateAny(def_exec(call))
 	})
 	obj.Set("version", Server)
 	obj.Set("os", runtime.GOOS)

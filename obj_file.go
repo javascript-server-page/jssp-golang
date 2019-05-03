@@ -77,13 +77,13 @@ func def_openfilebyname(jse *JsEngine, name string, flag int) *otto.Value {
 		if err != nil {
 			return *jse.CreateError(err)
 		}
-		return *jse.CreateString(string(data))
+		return *jse.CreateAny(string(data))
 	})
 	obj.Set("info", func(call otto.FunctionCall) otto.Value {
 		return *build_fileinfo(jse, f)
 	})
 	obj.Set("parent", func(call otto.FunctionCall) otto.Value {
-		return *jse.CreateString(path.Base(name))
+		return *jse.CreateAny(path.Base(name))
 	})
 	obj.Set("close", func(call otto.FunctionCall) otto.Value {
 		return *jse.CreateError(f.Close())
@@ -127,13 +127,13 @@ func build_fileinfo(jse *JsEngine, f *os.File) *otto.Value {
 	val := jse.CreateObjectValue()
 	obj := val.Object()
 	obj.Set("name", func(call otto.FunctionCall) otto.Value {
-		return *jse.CreateString(fi.Name())
+		return *jse.CreateAny(fi.Name())
 	})
 	obj.Set("size", func(call otto.FunctionCall) otto.Value {
 		return *jse.CreateAny(fi.Size())
 	})
 	obj.Set("mode", func(call otto.FunctionCall) otto.Value {
-		return *jse.CreateString(fi.Mode().String())
+		return *jse.CreateAny(fi.Mode().String())
 	})
 	obj.Set("time", func(call otto.FunctionCall) otto.Value {
 		return *jse.CreateAny(fi.ModTime())

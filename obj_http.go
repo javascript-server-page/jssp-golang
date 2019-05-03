@@ -119,7 +119,7 @@ func build_editableheader(jse *JsEngine, h http.Header) *otto.Object {
 		if val.IsUndefined() {
 			return val
 		}
-		return *jse.CreateString(h.Get(val.String()))
+		return *jse.CreateAny(h.Get(val.String()))
 	})
 	obj.Set("set", func(call otto.FunctionCall) otto.Value {
 		key := call.Argument(0)
@@ -132,7 +132,7 @@ func build_editableheader(jse *JsEngine, h http.Header) *otto.Object {
 			return val
 		}
 		keystr := key.String()
-		pre := *jse.CreateString(h.Get(keystr))
+		pre := *jse.CreateAny(h.Get(keystr))
 		h.Set(keystr, val.String())
 		return pre
 	})

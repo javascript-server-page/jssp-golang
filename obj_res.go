@@ -66,6 +66,6 @@ func def_runsrc(jse *JsEngine, src interface{}) *otto.Value {
 	if err != nil {
 		return jse.CreateError(err)
 	} else {
-		return jse.CreateString(str.String())
+		return jse.CreateAny(str.String())
 	}
 }

@@ -31,11 +31,6 @@ func (e *JsEngine) CreateObjectValue() *otto.Value {
 	return &val
 }
 
-func (e *JsEngine) CreateString(s string) *otto.Value {
-	v, _ := e.ToValue(s)
-	return &v
-}
-
 func (e *JsEngine) CreateArray() *otto.Value {
 	val, _ := e.Otto.Run("[]")
 	return &val
