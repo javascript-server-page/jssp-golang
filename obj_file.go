@@ -10,7 +10,7 @@ import (
 
 func GenerateObjFile(jse *JsEngine, jspath string) *otto.Object {
 	dir, _ := path.Split(jspath)
-	obj := jse.CreateObject()
+	obj := jse.CreateObjectValue().Object()
 	obj.Set("open", func(call otto.FunctionCall) otto.Value {
 		return *def_openfile(jse, &call, dir, os.O_RDWR)
 	})

@@ -17,7 +17,7 @@ func GenerateObjRes(jse *JsEngine, w http.ResponseWriter) *otto.Object {
 		}
 		return otto.Value{}
 	})
-	obj := jse.CreateObject()
+	obj := jse.CreateObjectValue().Object()
 	obj.Set("header", build_editableheader(jse, w.Header()))
 	obj.Set("type", func(call otto.FunctionCall) otto.Value {
 		fval := call.Argument(0)

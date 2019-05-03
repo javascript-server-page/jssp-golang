@@ -7,7 +7,7 @@ import (
 )
 
 func GenerateObjJssp(jse *JsEngine) *otto.Object {
-	obj := jse.CreateObject()
+	obj := jse.CreateObjectValue().Object()
 	obj.Set("exec", func(call otto.FunctionCall) otto.Value {
 		if len(call.ArgumentList) == 0 {
 			return otto.UndefinedValue()

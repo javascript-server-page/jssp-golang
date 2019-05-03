@@ -6,7 +6,7 @@ import (
 )
 
 func GenerateObjReq(jse *JsEngine, r *http.Request) *otto.Object {
-	obj := jse.CreateObject()
+	obj := jse.CreateObjectValue().Object()
 	obj.Set("header", build_header(jse, r.Header))
 	obj.Set("host", r.Host)
 	obj.Set("method", r.Method)

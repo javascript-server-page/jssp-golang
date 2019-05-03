@@ -11,7 +11,7 @@ import (
 
 func GenerateObjHttp(jse *JsEngine) *otto.Object {
 	client := &http.Client{}
-	obj := jse.CreateObject()
+	obj := jse.CreateObjectValue().Object()
 	obj.Set("get", func(call otto.FunctionCall) otto.Value {
 		res, err := def_request(client, "GET", &call)
 		return *build_response(jse, res, err)
@@ -103,7 +103,7 @@ func params_string(params *otto.Value) *bytes.Buffer {
 
 // build an uneditable jssp.header object
 func build_header(jse *JsEngine, h http.Header) *otto.Object {
-	obj := jse.CreateObject()
+	obj := jse.CreateObjectValue().Object()
 	for k := range h {
 		v := h.Get(k)
 		obj.Set(k, v)
@@ -113,7 +113,7 @@ func build_header(jse *JsEngine, h http.Header) *otto.Object {
 
 // build an editable jssp.header object
 func build_editableheader(jse *JsEngine, h http.Header) *otto.Object {
-	obj := jse.CreateObject()
+	obj := jse.CreateObjectValue().Object()
 	obj.Set("get", func(call otto.FunctionCall) otto.Value {
 		val := call.Argument(0)
 		if val.IsUndefined() {

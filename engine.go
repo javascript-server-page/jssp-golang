@@ -21,11 +21,6 @@ func (e *JsEngine) Run(src interface{}) (fmt.Stringer, error) {
 	return e.Otto.Run(src)
 }
 
-func (e *JsEngine) CreateObject() *otto.Object {
-	val, _ := e.Otto.Run("({})")
-	return val.Object()
-}
-
 func (e *JsEngine) CreateObjectValue() *otto.Value {
 	val, _ := e.Otto.Run("({})")
 	return &val
