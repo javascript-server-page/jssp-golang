@@ -32,13 +32,8 @@ func (e *JsEngine) CreateArray() *otto.Value {
 }
 
 func (e *JsEngine) CreateError(err error) *otto.Value {
-	if err != nil {
-		val, err := e.Call("Error", e, err.Error())
-		if err == nil {
-			return &val
-		}
-	}
-	return &otto.Value{}
+	ce := e.MakeCustomError("Jssp", err.Error())
+	return &ce
 }
 
 func (e *JsEngine) CreateAny(any interface{}) *otto.Value {
@@ -48,7 +43,8 @@ func (e *JsEngine) CreateAny(any interface{}) *otto.Value {
 	}
 	v, err := e.ToValue(any)
 	if err != nil {
-		return e.CreateError(err)
+		re := e.MakeRangeError(err.Error())
+		return &re
 	}
 	return &v
 }
