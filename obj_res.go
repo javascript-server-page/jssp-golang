@@ -42,10 +42,16 @@ func GenerateObjRes(jse *JsEngine, w http.ResponseWriter) *otto.Object {
 		if err != nil {
 			return *jse.CreateError(err)
 		}
+		if jse.isError(&f) {
+			return f
+		}
 		defer f.Object().Call("close")
 		src, err := f.Object().Call("read")
 		if err != nil {
 			return *jse.CreateError(err)
+		}
+		if jse.isError(&src) {
+			return src
 		}
 		if strings.HasSuffix(fname, "js") {
 			return *def_runsrc(jse, src.String())
