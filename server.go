@@ -14,12 +14,14 @@ const INDEX_JSJS = "index" + JSJS
 
 type JsspServer struct {
 	http.ServeMux
+	paras *Parameter
 	static http.Handler
 	root   http.FileSystem
 }
 
 // init JsspServer
 func (s *JsspServer) Init(paras *Parameter) {
+	s.paras = paras
 	s.root = http.Dir(paras.Dir)
 	s.static = http.FileServer(s.root)
 	s.HandleFunc("/", s.ServeAll)
@@ -40,7 +42,7 @@ func (s *JsspServer) ServeAll(w http.ResponseWriter, r *http.Request) {
 		if ext == JSSP {
 			data = jssp_jsjs(data)
 		}
-		js := GenerateJsspEnv(w, r)
+		js := GenerateJsspEnv(s, w, r)
 		ast, err := js.Parse(data)
 		if err != nil {
 			s.error(w, err)
