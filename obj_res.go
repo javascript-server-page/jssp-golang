@@ -17,6 +17,32 @@ func GenerateObjRes(jse *JsEngine, w http.ResponseWriter) *otto.Object {
 		}
 		return otto.Value{}
 	})
+	jse.Set("print", func(call otto.FunctionCall) otto.Value {
+		n := len(call.ArgumentList)
+		if n == 0 {
+			return otto.UndefinedValue()
+		}
+		json, err := jse.Get("JSON")
+		if err != nil {
+			return *jse.CreateError(err)
+		}
+		var value interface{}
+		if n == 1 {
+			value = call.Argument(0).Object()
+		} else {
+			arr := jse.CreateArray().Object()
+			for _, e := range call.ArgumentList {
+				arr.Call("push", e)
+			}
+			value = arr
+		}
+		str, err := json.Object().Call("stringify", value)
+		if err != nil {
+			return *jse.CreateError(err)
+		}
+		w.Write([]byte(str.String()))
+		return otto.Value{}
+	})
 	obj := jse.CreateObjectValue().Object()
 	obj.Set("header", build_editableheader(jse, w.Header()))
 	obj.Set("type", func(call otto.FunctionCall) otto.Value {
