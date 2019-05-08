@@ -94,10 +94,10 @@ func GenerateObjRes(jse *JsEngine, w http.ResponseWriter) *otto.Object {
 
 // run js src code
 func def_runsrc(jse *JsEngine, src interface{}) *otto.Value {
-	str, err := jse.Run(src)
+	str, err := jse.Eval(src)
 	if err != nil {
 		return jse.CreateError(err)
 	} else {
-		return jse.CreateAny(str.String())
+		return &str
 	}
 }
