@@ -34,11 +34,17 @@ func jssp_jsjs(data []byte) []byte {
 	buf := &bytes.Buffer{}
 	buf.WriteString(`echo("`)
 	isJsjs := false
+	isPrint := false
 	for i, n := 0, len(data); i < n; i++ {
 		c := data[i]
 		if isJsjs {
 			if c == '%' && data[i+1] == '>' {
-				buf.WriteString(`;echo("`)
+				if isPrint {
+					isPrint = false
+					buf.WriteString(`);echo("`)
+				} else {
+					buf.WriteString(`;echo("`)
+				}
 				i++
 				isJsjs = false
 			} else {
@@ -47,6 +53,11 @@ func jssp_jsjs(data []byte) []byte {
 		} else {
 			if c == '<' && data[i+1] == '%' {
 				buf.WriteString(`");`)
+				if data[i+2] == '=' {
+					i++
+					isPrint = true;
+					buf.WriteString(`echo(`)
+				}
 				i++
 				isJsjs = true
 			} else {
