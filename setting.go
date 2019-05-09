@@ -8,6 +8,7 @@ import (
 
 type Parameter struct {
 	Dir  string
+	Log  string
 	Port string
 }
 
@@ -18,6 +19,7 @@ func (paras *Parameter) Init() {
 	flag.BoolVar(&help, "h", false, "this help")
 	flag.BoolVar(&version, "v", false, "show version and exit")
 	flag.StringVar(&(paras.Dir), "d", ".", "jssp folder")
+	flag.StringVar(&(paras.Log), "l", "req.log", "log file")
 	flag.StringVar(&(paras.Port), "p", "2019", "listening port")
 	flag.Parse()
 	if help {
@@ -42,8 +44,8 @@ func (paras *Parameter) organize() {
 }
 
 func printUsage() {
-	println(`Usage: jssp [-p port] [-d dir]
-Example: jssp -p 2019 -d .
+	println(`Usage: jssp [-p port] [-d dir] [-l log]
+Example: jssp -p 2019 -d . -l req.log
 
 Options:`)
 }

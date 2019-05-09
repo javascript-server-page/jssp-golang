@@ -14,7 +14,8 @@ const INDEX_JSJS = "index" + JSJS
 
 type JsspServer struct {
 	http.ServeMux
-	paras *Parameter
+	log    *Logging
+	paras  *Parameter
 	static http.Handler
 	root   http.FileSystem
 }
@@ -23,8 +24,9 @@ type JsspServer struct {
 func (s *JsspServer) Init(paras *Parameter) {
 	s.paras = paras
 	s.root = http.Dir(paras.Dir)
+	s.log = NewLogging(paras.Log)
 	s.static = http.FileServer(s.root)
-	s.HandleFunc("/", s.ServeAll)
+	s.HandleFunc("/", s.log.RequestLogHandlerFunc(s.ServeAll))
 }
 
 // handler func
