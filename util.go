@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io/ioutil"
 	"net/http"
+	"os"
 )
 
 func getFile(fs http.FileSystem, name string) http.File {
@@ -11,7 +12,6 @@ func getFile(fs http.FileSystem, name string) http.File {
 	if err != nil {
 		return nil
 	}
-
 	stat, err := f.Stat()
 	if err != nil {
 		f.Close()
@@ -28,6 +28,13 @@ func getFile(fs http.FileSystem, name string) http.File {
 func readFile(f http.File) ([]byte, error) {
 	defer f.Close()
 	return ioutil.ReadAll(f)
+}
+
+func fileExists(path string) bool {
+	if stat, err := os.Stat(path); err == nil {
+		return !stat.IsDir()
+	}
+	return false
 }
 
 func jssp_jsjs(data []byte) []byte {
