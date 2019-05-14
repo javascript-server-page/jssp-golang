@@ -6,6 +6,8 @@ import (
 	"runtime"
 )
 
+var global = make(map[string]*otto.Object)
+
 func GenerateObjJssp(jse *JsEngine) *otto.Object {
 	obj := jse.CreateObjectValue().Object()
 	obj.Set("exec", func(call otto.FunctionCall) otto.Value {
@@ -17,6 +19,7 @@ func GenerateObjJssp(jse *JsEngine) *otto.Object {
 	obj.Set("version", Server)
 	obj.Set("os", runtime.GOOS)
 	obj.Set("arch", runtime.GOARCH)
+	obj.Set("global", build_global(jse))
 	return obj
 }
 
@@ -40,4 +43,10 @@ func def_exec(call otto.FunctionCall) string {
 	} else {
 		return string(res)
 	}
+}
+
+// build jssp.global object
+func build_global(jse *JsEngine) *otto.Object {
+	obj := jse.CreateObjectValue().Object()
+	return obj
 }
