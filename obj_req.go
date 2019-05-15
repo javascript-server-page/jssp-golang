@@ -68,31 +68,21 @@ func build_cookie(jse *JsEngine, r *http.Request) *otto.Object {
 
 // build req.session object
 func build_session(jse *JsEngine, r *http.Request) *otto.Object {
+	const SESSION_KEY = "jssp-session-id"
 	obj := jse.CreateObjectValue().Object()
 	obj.Set("get", func(call otto.FunctionCall) otto.Value {
-		val := call.Argument(0)
-		if val.IsUndefined() {
-			return val
-		}
-		c, err := r.Cookie(val.String())
+		c, err := r.Cookie(SESSION_KEY)
 		if err != nil {
 			return otto.UndefinedValue()
 		}
 		return *jse.CreateAny(c.Value)
 	})
 	obj.Set("set", func(call otto.FunctionCall) otto.Value {
-		key := call.Argument(0)
-		if key.IsUndefined() || key.IsNull() {
-			return key
+		c, err := r.Cookie(SESSION_KEY)
+		if err != nil {
+			return otto.UndefinedValue()
 		}
-		keystr := key.String()
-		val := call.Argument(1)
-		c := &http.Cookie{Name: keystr, Value: val.String(),}
-		if val.IsUndefined() || val.IsNull() {
-			c.MaxAge = -1
-		}
-		r.AddCookie(c)
-		return otto.UndefinedValue()
+		return *jse.CreateAny(c.Value)
 	})
 	obj.Set("map", func(call otto.FunctionCall) otto.Value {
 		val := jse.CreateObjectValue()
