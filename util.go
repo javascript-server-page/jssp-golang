@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	uuid "github.com/satori/go.uuid"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -62,7 +63,7 @@ func jssp_jsjs(data []byte) []byte {
 				buf.WriteString(`");`)
 				if data[i+2] == '=' {
 					i++
-					isPrint = true;
+					isPrint = true
 					buf.WriteString(`echo(`)
 				}
 				i++
@@ -85,4 +86,8 @@ func jssp_jsjs(data []byte) []byte {
 	}
 	buf.WriteString(`");`)
 	return buf.Bytes()
+}
+
+func getUUID() string {
+	return uuid.NewV4().String()
 }
