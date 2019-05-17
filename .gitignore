@@ -28,3 +28,4 @@ go.sum
 # Jssp
 *.jssp
 *.jsjs
+demo/
