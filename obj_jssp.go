@@ -6,7 +6,7 @@ import (
 	"runtime"
 )
 
-var global = make(map[string]*otto.Object)
+var global = make(map[string]*otto.Value)
 
 func GenerateObjJssp(jse *JsEngine) *otto.Object {
 	obj := jse.CreateObjectValue().Object()
