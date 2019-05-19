@@ -48,5 +48,31 @@ func def_exec(call otto.FunctionCall) string {
 // build jssp.global object
 func build_global(jse *JsEngine) *otto.Object {
 	obj := jse.CreateObjectValue().Object()
+	obj.Set("get", func(call otto.FunctionCall) otto.Value {
+		val := call.Argument(0)
+		if val.IsUndefined() {
+			return val
+		}
+		if res, is := global[val.String()]; !is {
+			return otto.UndefinedValue()
+		} else {
+			return *res
+		}
+	})
+	obj.Set("set", func(call otto.FunctionCall) otto.Value {
+		key := call.Argument(0)
+		if key.IsUndefined() || key.IsNull() {
+			return key
+		}
+		k := key.String()
+		res, is := global[k]
+		val := call.Argument(1)
+		global[k] = &val
+		if !is {
+			return otto.UndefinedValue()
+		} else {
+			return *res
+		}
+	})
 	return obj
 }
