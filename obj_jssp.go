@@ -6,7 +6,7 @@ import (
 	"runtime"
 )
 
-var global = make(map[string]*otto.Value)
+var storage = make(map[string]string)
 
 func GenerateObjJssp(jse *JsEngine) *otto.Object {
 	obj := jse.CreateObjectValue().Object()
@@ -19,7 +19,7 @@ func GenerateObjJssp(jse *JsEngine) *otto.Object {
 	obj.Set("version", Server)
 	obj.Set("os", runtime.GOOS)
 	obj.Set("arch", runtime.GOARCH)
-	obj.Set("global", build_global(jse))
+	obj.Set("storage", build_storage(jse))
 	return obj
 }
 
@@ -45,34 +45,38 @@ func def_exec(call otto.FunctionCall) string {
 	}
 }
 
-// build jssp.global object
-func build_global(jse *JsEngine) *otto.Object {
+// build jssp.storage object
+func build_storage(jse *JsEngine) *otto.Object {
 	obj := jse.CreateObjectValue().Object()
-	obj.Set("get", func(call otto.FunctionCall) otto.Value {
-		val := call.Argument(0)
-		if val.IsUndefined() {
-			return val
-		}
-		if res, is := global[val.String()]; !is {
+	obj.Set("getItem", func(call otto.FunctionCall) otto.Value {
+		if res, is := storage[call.Argument(0).String()]; !is {
 			return otto.UndefinedValue()
 		} else {
-			return *res
+			return *jse.CreateAny(res)
 		}
 	})
-	obj.Set("set", func(call otto.FunctionCall) otto.Value {
-		key := call.Argument(0)
-		if key.IsUndefined() || key.IsNull() {
-			return key
+	obj.Set("setItem", func(call otto.FunctionCall) otto.Value {
+		storage[call.Argument(0).String()] = call.Argument(1).String()
+		return otto.UndefinedValue()
+	})
+	obj.Set("removeItem", func(call otto.FunctionCall) otto.Value {
+		delete(storage, call.Argument(0).String())
+		return otto.UndefinedValue()
+	})
+	obj.Set("size", func(call otto.FunctionCall) otto.Value {
+		return *jse.CreateAny(len(storage))
+	})
+	obj.Set("keys", func(call otto.FunctionCall) otto.Value {
+		arr := jse.CreateArray()
+		o := arr.Object()
+		for key := range storage {
+			o.Call("push", key)
 		}
-		k := key.String()
-		res, is := global[k]
-		val := call.Argument(1)
-		global[k] = &val
-		if !is {
-			return otto.UndefinedValue()
-		} else {
-			return *res
-		}
+		return *arr
+	})
+	obj.Set("clear", func(call otto.FunctionCall) otto.Value {
+		storage = make(map[string]string)
+		return otto.UndefinedValue()
 	})
 	return obj
 }
