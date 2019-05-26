@@ -4,8 +4,10 @@ import (
 	"github.com/robertkrimen/otto"
 	"os/exec"
 	"runtime"
+	"sync"
 )
 
+var rwMutex = new(sync.RWMutex)
 var storage = make(map[string]string)
 
 func GenerateObjJssp(jse *JsEngine) *otto.Object {
@@ -49,6 +51,8 @@ func def_exec(call otto.FunctionCall) string {
 func build_storage(jse *JsEngine) *otto.Object {
 	obj := jse.CreateObjectValue().Object()
 	obj.Set("getItem", func(call otto.FunctionCall) otto.Value {
+		rwMutex.RLock()
+		defer rwMutex.RUnlock()
 		if res, is := storage[call.Argument(0).String()]; !is {
 			return otto.UndefinedValue()
 		} else {
@@ -56,17 +60,25 @@ func build_storage(jse *JsEngine) *otto.Object {
 		}
 	})
 	obj.Set("setItem", func(call otto.FunctionCall) otto.Value {
+		rwMutex.Lock()
+		defer rwMutex.Unlock()
 		storage[call.Argument(0).String()] = call.Argument(1).String()
 		return otto.UndefinedValue()
 	})
 	obj.Set("removeItem", func(call otto.FunctionCall) otto.Value {
+		rwMutex.Lock()
+		defer rwMutex.Unlock()
 		delete(storage, call.Argument(0).String())
 		return otto.UndefinedValue()
 	})
 	obj.Set("size", func(call otto.FunctionCall) otto.Value {
+		rwMutex.RLock()
+		defer rwMutex.RUnlock()
 		return *jse.CreateAny(len(storage))
 	})
 	obj.Set("keys", func(call otto.FunctionCall) otto.Value {
+		rwMutex.RLock()
+		defer rwMutex.RUnlock()
 		arr := jse.CreateArray()
 		o := arr.Object()
 		for key := range storage {
@@ -75,6 +87,8 @@ func build_storage(jse *JsEngine) *otto.Object {
 		return *arr
 	})
 	obj.Set("clear", func(call otto.FunctionCall) otto.Value {
+		rwMutex.Lock()
+		defer rwMutex.Unlock()
 		storage = make(map[string]string)
 		return otto.UndefinedValue()
 	})
