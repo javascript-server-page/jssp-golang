@@ -18,18 +18,17 @@ const INDEX_JSJS = "index" + JSJS
 type JsspServer struct {
 	http.ServeMux
 	log    *Logging
-	paras  *Parameter
+	set    *Setting
 	static http.Handler
 	root   http.FileSystem
 }
 
 // init JsspServer
 func (s *JsspServer) Init() {
-	paras := new(Parameter)
-	paras.Init()
-	s.paras = paras
-	s.root = http.Dir(paras.Dir)
-	s.log = NewLogging(paras.Log)
+	s.set = new(Setting)
+	s.set.Init()
+	s.root = http.Dir(s.set.Dir)
+	s.log = NewLogging(s.set.Log)
 	s.static = http.FileServer(s.root)
 	s.HandleFunc("/", s.log.RequestLogHandlerFunc(s.ServeAll))
 }
@@ -102,7 +101,7 @@ func (s *JsspServer) header(w http.ResponseWriter) {
 
 // run Jssp server
 func (s *JsspServer) Run() {
-	err := http.ListenAndServe(":"+s.paras.Port, s)
+	err := http.ListenAndServe(":"+s.set.Port, s)
 	if err != nil {
 		println(err.Error())
 	}

@@ -100,7 +100,7 @@ func GetJsEngine() *JavaScript {
 
 func GenerateJsspEnv(s *JsspServer, w http.ResponseWriter, r *http.Request) *JavaScript {
 	js := GetJsEngine()
-	js.Set("file", GenerateObjFile(js, s.paras.Dir+r.RequestURI))
+	js.Set("file", GenerateObjFile(js, s.set.Dir+r.RequestURI))
 	js.Set("req", GenerateObjReq(js, r))
 	js.Set("res", GenerateObjRes(js, w))
 	return js

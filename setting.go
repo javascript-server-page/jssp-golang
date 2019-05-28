@@ -6,21 +6,21 @@ import (
 	"strconv"
 )
 
-type Parameter struct {
+type Setting struct {
 	Dir  string
 	Log  string
 	Port string
 }
 
-func (paras *Parameter) Init() {
+func (set *Setting) Init() {
 	var (
 		help, version bool
 	)
 	flag.BoolVar(&help, "h", false, "this help")
 	flag.BoolVar(&version, "v", false, "show version and exit")
-	flag.StringVar(&(paras.Dir), "d", ".", "jssp folder")
-	flag.StringVar(&(paras.Log), "l", "req.log", "log file")
-	flag.StringVar(&(paras.Port), "p", "2019", "listening port")
+	flag.StringVar(&(set.Dir), "d", ".", "jssp folder")
+	flag.StringVar(&(set.Log), "l", "req.log", "log file")
+	flag.StringVar(&(set.Port), "p", "2019", "listening port")
 	flag.Parse()
 	if help {
 		printUsage()
@@ -30,15 +30,15 @@ func (paras *Parameter) Init() {
 		printVersion()
 		os.Exit(1)
 	} else {
-		paras.organize()
+		set.organize()
 	}
 }
 
 // Organize command line parameters
-func (paras *Parameter) organize() {
-	_, err := strconv.Atoi(paras.Port)
+func (set *Setting) organize() {
+	_, err := strconv.Atoi(set.Port)
 	if err != nil {
-		println("Port " + paras.Port + ":illegal")
+		println("Port " + set.Port + ":illegal")
 		os.Exit(1)
 	}
 }
