@@ -9,50 +9,50 @@ import (
 	"sync"
 )
 
-type JsEngine struct {
+type JavaScript struct {
 	*otto.Otto
 }
 
-func (e *JsEngine) Parse(src []byte) (interface{}, error) {
+func (js *JavaScript) Parse(src []byte) (interface{}, error) {
 	return parser.ParseFile(nil, "", src, 0)
 }
 
-func (e *JsEngine) Run(src interface{}) (fmt.Stringer, error) {
-	return e.Otto.Run(src)
+func (js *JavaScript) Run(src interface{}) (fmt.Stringer, error) {
+	return js.Otto.Run(src)
 }
 
-func (e *JsEngine) CreateObjectValue() *otto.Value {
-	val, _ := e.Otto.Run("({})")
+func (js JavaScript) CreateObjectValue() *otto.Value {
+	val, _ := js.Otto.Run("({})")
 	return &val
 }
 
-func (e *JsEngine) CreateArray() *otto.Value {
-	val, _ := e.Otto.Run("[]")
+func (js JavaScript) CreateArray() *otto.Value {
+	val, _ := js.Otto.Run("[]")
 	return &val
 }
 
-func (e *JsEngine) CreateError(err error) *otto.Value {
+func (js JavaScript) CreateError(err error) *otto.Value {
 	if err != nil {
-		ce := e.MakeCustomError("Jssp", err.Error())
+		ce := js.MakeCustomError("Jssp", err.Error())
 		return &ce
 	}
 	return &otto.Value{}
 }
 
-func (e *JsEngine) CreateAny(any interface{}) *otto.Value {
+func (js JavaScript) CreateAny(any interface{}) *otto.Value {
 	if any == nil {
 		null := otto.NullValue()
 		return &null
 	}
-	v, err := e.ToValue(any)
+	v, err := js.ToValue(any)
 	if err != nil {
-		re := e.MakeRangeError(err.Error())
+		re := js.MakeRangeError(err.Error())
 		return &re
 	}
 	return &v
 }
 
-func (e *JsEngine) isError(val *otto.Value) bool {
+func (js JavaScript) isError(val *otto.Value) bool {
 	if val == nil {
 		return false
 	}
@@ -80,28 +80,28 @@ func generate() {
 	}
 }
 
-func NewJsEngine() *JsEngine {
-	js := &JsEngine{otto.New()}
+func NewJsEngine() *JavaScript {
+	js := &JavaScript{otto.New()}
 	js.Set("http", GenerateObjHttp(js))
 	js.Set("jsdo", GenerateObjJsdo(js))
 	js.Set("jssp", GenerateObjJssp(js))
 	return js
 }
 
-func GetJsEngine() *JsEngine {
+func GetJsEngine() *JavaScript {
 	mutex.Lock()
 	defer mutex.Unlock()
 	if cache.Len() == 0 {
 		isGenerate <- true
 		return NewJsEngine()
 	}
-	return cache.Remove(cache.Front()).(*JsEngine)
+	return cache.Remove(cache.Front()).(*JavaScript)
 }
 
-func GenerateJsspEnv(s *JsspServer, w http.ResponseWriter, r *http.Request) *JsEngine {
-	jse := GetJsEngine()
-	jse.Set("file", GenerateObjFile(jse, s.paras.Dir+r.RequestURI))
-	jse.Set("req", GenerateObjReq(jse, r))
-	jse.Set("res", GenerateObjRes(jse, w))
-	return jse
+func GenerateJsspEnv(s *JsspServer, w http.ResponseWriter, r *http.Request) *JavaScript {
+	js := GetJsEngine()
+	js.Set("file", GenerateObjFile(js, s.paras.Dir+r.RequestURI))
+	js.Set("req", GenerateObjReq(js, r))
+	js.Set("res", GenerateObjRes(js, w))
+	return js
 }

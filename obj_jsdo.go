@@ -4,8 +4,8 @@ import (
 	"github.com/robertkrimen/otto"
 )
 
-func GenerateObjJsdo(jse *JsEngine) *otto.Object {
-	obj := jse.CreateObjectValue().Object()
+func GenerateObjJsdo(js *JavaScript) *otto.Object {
+	obj := js.CreateObjectValue().Object()
 	obj.Set("mysql", func(call otto.FunctionCall) otto.Value {
 		return otto.Value{}
 	})

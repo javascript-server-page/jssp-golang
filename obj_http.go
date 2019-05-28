@@ -9,24 +9,24 @@ import (
 	"strings"
 )
 
-func GenerateObjHttp(jse *JsEngine) *otto.Object {
+func GenerateObjHttp(js *JavaScript) *otto.Object {
 	client := &http.Client{}
-	obj := jse.CreateObjectValue().Object()
+	obj := js.CreateObjectValue().Object()
 	obj.Set("get", func(call otto.FunctionCall) otto.Value {
 		res, err := def_request(client, "GET", &call)
-		return *build_response(jse, res, err)
+		return *build_response(js, res, err)
 	})
 	obj.Set("head", func(call otto.FunctionCall) otto.Value {
 		res, err := def_request(client, "HEAD", &call)
-		return *build_response(jse, res, err)
+		return *build_response(js, res, err)
 	})
 	obj.Set("post", func(call otto.FunctionCall) otto.Value {
 		res, err := def_request(client, "POST", &call)
-		return *build_response(jse, res, err)
+		return *build_response(js, res, err)
 	})
 	obj.Set("put", func(call otto.FunctionCall) otto.Value {
 		res, err := def_request(client, "PUT", &call)
-		return *build_response(jse, res, err)
+		return *build_response(js, res, err)
 	})
 	return obj
 }
@@ -49,8 +49,8 @@ func def_request(client *http.Client, method string, call *otto.FunctionCall) (*
 }
 
 // build  jssp.Response object with *http.Response and error
-func build_response(jse *JsEngine, response *http.Response, err error) *otto.Value {
-	val := jse.CreateObjectValue()
+func build_response(js *JavaScript, response *http.Response, err error) *otto.Value {
+	val := js.CreateObjectValue()
 	obj := val.Object()
 	if err != nil {
 		obj.Set("status", -1)
@@ -59,7 +59,7 @@ func build_response(jse *JsEngine, response *http.Response, err error) *otto.Val
 		data, _ := ioutil.ReadAll(response.Body)
 		obj.Set("status", response.StatusCode)
 		obj.Set("body", string(data))
-		obj.Set("header", build_header(jse, response.Header))
+		obj.Set("header", build_header(js, response.Header))
 	}
 	return val
 }
@@ -102,8 +102,8 @@ func params_string(params *otto.Value) *bytes.Buffer {
 }
 
 // build an uneditable jssp.header object
-func build_header(jse *JsEngine, h http.Header) *otto.Object {
-	obj := jse.CreateObjectValue().Object()
+func build_header(js *JavaScript, h http.Header) *otto.Object {
+	obj := js.CreateObjectValue().Object()
 	for k := range h {
 		v := h.Get(k)
 		obj.Set(k, v)
@@ -112,14 +112,14 @@ func build_header(jse *JsEngine, h http.Header) *otto.Object {
 }
 
 // build an editable jssp.header object
-func build_editableheader(jse *JsEngine, h http.Header) *otto.Object {
-	obj := jse.CreateObjectValue().Object()
+func build_editableheader(js *JavaScript, h http.Header) *otto.Object {
+	obj := js.CreateObjectValue().Object()
 	obj.Set("get", func(call otto.FunctionCall) otto.Value {
 		val := call.Argument(0)
 		if val.IsUndefined() {
 			return val
 		}
-		return *jse.CreateAny(h.Get(val.String()))
+		return *js.CreateAny(h.Get(val.String()))
 	})
 	obj.Set("set", func(call otto.FunctionCall) otto.Value {
 		key := call.Argument(0)
@@ -132,12 +132,12 @@ func build_editableheader(jse *JsEngine, h http.Header) *otto.Object {
 			return val
 		}
 		keystr := key.String()
-		pre := *jse.CreateAny(h.Get(keystr))
+		pre := *js.CreateAny(h.Get(keystr))
 		h.Set(keystr, val.String())
 		return pre
 	})
 	obj.Set("map", func(call otto.FunctionCall) otto.Value {
-		val := jse.CreateObjectValue()
+		val := js.CreateObjectValue()
 		obj := val.Object()
 		for k := range h {
 			v := h.Get(k)

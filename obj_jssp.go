@@ -10,18 +10,18 @@ import (
 var rwMutex = new(sync.RWMutex)
 var storage = make(map[string]string)
 
-func GenerateObjJssp(jse *JsEngine) *otto.Object {
-	obj := jse.CreateObjectValue().Object()
+func GenerateObjJssp(js *JavaScript) *otto.Object {
+	obj := js.CreateObjectValue().Object()
 	obj.Set("exec", func(call otto.FunctionCall) otto.Value {
 		if len(call.ArgumentList) == 0 {
 			return otto.UndefinedValue()
 		}
-		return *jse.CreateAny(def_exec(call))
+		return *js.CreateAny(def_exec(call))
 	})
 	obj.Set("version", Server)
 	obj.Set("os", runtime.GOOS)
 	obj.Set("arch", runtime.GOARCH)
-	obj.Set("storage", build_storage(jse))
+	obj.Set("storage", build_storage(js))
 	return obj
 }
 
@@ -48,15 +48,15 @@ func def_exec(call otto.FunctionCall) string {
 }
 
 // build jssp.storage object
-func build_storage(jse *JsEngine) *otto.Object {
-	obj := jse.CreateObjectValue().Object()
+func build_storage(js *JavaScript) *otto.Object {
+	obj := js.CreateObjectValue().Object()
 	obj.Set("getItem", func(call otto.FunctionCall) otto.Value {
 		rwMutex.RLock()
 		defer rwMutex.RUnlock()
 		if res, is := storage[call.Argument(0).String()]; !is {
 			return otto.UndefinedValue()
 		} else {
-			return *jse.CreateAny(res)
+			return *js.CreateAny(res)
 		}
 	})
 	obj.Set("setItem", func(call otto.FunctionCall) otto.Value {
@@ -74,12 +74,12 @@ func build_storage(jse *JsEngine) *otto.Object {
 	obj.Set("size", func(call otto.FunctionCall) otto.Value {
 		rwMutex.RLock()
 		defer rwMutex.RUnlock()
-		return *jse.CreateAny(len(storage))
+		return *js.CreateAny(len(storage))
 	})
 	obj.Set("keys", func(call otto.FunctionCall) otto.Value {
 		rwMutex.RLock()
 		defer rwMutex.RUnlock()
-		arr := jse.CreateArray()
+		arr := js.CreateArray()
 		o := arr.Object()
 		for key := range storage {
 			o.Call("push", key)

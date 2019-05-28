@@ -7,8 +7,8 @@ import (
 	"strings"
 )
 
-func GenerateObjRes(jse *JsEngine, w http.ResponseWriter) *otto.Object {
-	jse.Set("echo", func(call otto.FunctionCall) otto.Value {
+func GenerateObjRes(js *JavaScript, w http.ResponseWriter) *otto.Object {
+	js.Set("echo", func(call otto.FunctionCall) otto.Value {
 		for _, e := range call.ArgumentList {
 			str := e.String()
 			if len(str) > 0 {
@@ -17,20 +17,20 @@ func GenerateObjRes(jse *JsEngine, w http.ResponseWriter) *otto.Object {
 		}
 		return otto.Value{}
 	})
-	jse.Set("print", func(call otto.FunctionCall) otto.Value {
+	js.Set("print", func(call otto.FunctionCall) otto.Value {
 		n := len(call.ArgumentList)
 		if n == 0 {
 			return otto.UndefinedValue()
 		}
-		json, err := jse.Get("JSON")
+		json, err := js.Get("JSON")
 		if err != nil {
-			return *jse.CreateError(err)
+			return *js.CreateError(err)
 		}
 		var value interface{}
 		if n == 1 {
 			value = call.Argument(0).Object()
 		} else {
-			arr := jse.CreateArray().Object()
+			arr := js.CreateArray().Object()
 			for _, e := range call.ArgumentList {
 				arr.Call("push", e)
 			}
@@ -38,13 +38,13 @@ func GenerateObjRes(jse *JsEngine, w http.ResponseWriter) *otto.Object {
 		}
 		str, err := json.Object().Call("stringify", value)
 		if err != nil {
-			return *jse.CreateError(err)
+			return *js.CreateError(err)
 		}
 		w.Write([]byte(str.String()))
 		return otto.Value{}
 	})
-	obj := jse.CreateObjectValue().Object()
-	obj.Set("header", build_editableheader(jse, w.Header()))
+	obj := js.CreateObjectValue().Object()
+	obj.Set("header", build_editableheader(js, w.Header()))
 	obj.Set("type", func(call otto.FunctionCall) otto.Value {
 		fval := call.Argument(0)
 		if fval.IsUndefined() {
@@ -55,9 +55,9 @@ func GenerateObjRes(jse *JsEngine, w http.ResponseWriter) *otto.Object {
 		return otto.Value{}
 	})
 	obj.Set("include", func(call otto.FunctionCall) otto.Value {
-		file, err := jse.Get("file")
+		file, err := js.Get("file")
 		if err != nil {
-			return *jse.CreateError(err)
+			return *js.CreateError(err)
 		}
 		fval := call.Argument(0)
 		if fval.IsUndefined() {
@@ -66,24 +66,24 @@ func GenerateObjRes(jse *JsEngine, w http.ResponseWriter) *otto.Object {
 		fname := fval.String()
 		f, err := file.Object().Call("open", fname)
 		if err != nil {
-			return *jse.CreateError(err)
+			return *js.CreateError(err)
 		}
-		if jse.isError(&f) {
+		if js.isError(&f) {
 			return f
 		}
 		defer f.Object().Call("close")
 		src, err := f.Object().Call("read")
 		if err != nil {
-			return *jse.CreateError(err)
+			return *js.CreateError(err)
 		}
-		if jse.isError(&src) {
+		if js.isError(&src) {
 			return src
 		}
 		if strings.HasSuffix(fname, "js") {
-			return *def_runsrc(jse, src.String())
+			return *def_runsrc(js, src.String())
 		} else if strings.HasSuffix(fname, ".jssp") {
 			src := jssp_jsjs([]byte(src.String()))
-			return *def_runsrc(jse, src)
+			return *def_runsrc(js, src)
 		} else {
 			w.Write([]byte(src.String()))
 			return otto.UndefinedValue()
@@ -93,10 +93,10 @@ func GenerateObjRes(jse *JsEngine, w http.ResponseWriter) *otto.Object {
 }
 
 // run js src code
-func def_runsrc(jse *JsEngine, src interface{}) *otto.Value {
-	str, err := jse.Eval(src)
+func def_runsrc(js *JavaScript, src interface{}) *otto.Value {
+	str, err := js.Eval(src)
 	if err != nil {
-		return jse.CreateError(err)
+		return js.CreateError(err)
 	} else {
 		return &str
 	}
