@@ -7,6 +7,9 @@ import (
 	"strings"
 )
 
+const Version = "0.1"
+const Server = "jssp-golang-" + Version
+
 const JSSP = ".jssp"
 const JSJS = ".jsjs"
 const INDEX_JSSP = "index" + JSSP
@@ -21,7 +24,9 @@ type JsspServer struct {
 }
 
 // init JsspServer
-func (s *JsspServer) Init(paras *Parameter) {
+func (s *JsspServer) Init() {
+	paras := new(Parameter)
+	paras.Init()
 	s.paras = paras
 	s.root = http.Dir(paras.Dir)
 	s.log = NewLogging(paras.Log)
@@ -96,9 +101,15 @@ func (s *JsspServer) header(w http.ResponseWriter) {
 }
 
 // run Jssp server
-func (s *JsspServer) Run(paras *Parameter) {
-	err := http.ListenAndServe(":"+paras.Port, s)
+func (s *JsspServer) Run() {
+	err := http.ListenAndServe(":"+s.paras.Port, s)
 	if err != nil {
 		println(err.Error())
 	}
+}
+
+func main() {
+	js := new(JsspServer)
+	js.Init()
+	js.Run()
 }
