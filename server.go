@@ -17,6 +17,7 @@ const INDEX_JSJS = "index" + JSJS
 
 type JsspServer struct {
 	http.ServeMux
+	eng    *Engine
 	log    *Logging
 	set    *Setting
 	static http.Handler
@@ -27,6 +28,7 @@ type JsspServer struct {
 func (s *JsspServer) Init() {
 	s.set = new(Setting)
 	s.set.Init()
+	s.eng = NewEngine()
 	s.root = http.Dir(s.set.Dir)
 	s.log = NewLogging(s.set.Log)
 	s.static = http.FileServer(s.root)
@@ -48,7 +50,7 @@ func (s *JsspServer) ServeAll(w http.ResponseWriter, r *http.Request) {
 		if ext == JSSP {
 			data = jssp_jsjs(data)
 		}
-		js := GenerateJsspEnv(s, w, r)
+		js := s.eng.GenJsspEnv(s, w, r)
 		ast, err := js.Parse(data)
 		if err != nil {
 			s.error(w, err)

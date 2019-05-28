@@ -59,28 +59,20 @@ func (js JavaScript) isError(val *otto.Value) bool {
 	return val.Class() == "Error"
 }
 
-const cache_max = 500
-
-var mutex = new(sync.Mutex)
-
-var cache *list.List = list.New()
-
-var isGenerate = make(chan bool)
-
-func init() {
-	go generate()
+type Engine struct {
+	max        int
+	mutex      *sync.Mutex
+	cache      *list.List
+	isGenerate chan bool
 }
 
-func generate() {
-	for {
-		<-isGenerate
-		for cache.Len() < cache_max {
-			cache.PushBack(NewJsEngine())
-		}
-	}
+func NewEngine() *Engine {
+	e := &Engine{500, new(sync.Mutex), list.New(), make(chan bool)}
+	go e.generate()
+	return e
 }
 
-func NewJsEngine() *JavaScript {
+func (e *Engine) NewJavaScript() *JavaScript {
 	js := &JavaScript{otto.New()}
 	js.Set("http", GenerateObjHttp(js))
 	js.Set("jsdo", GenerateObjJsdo(js))
@@ -88,20 +80,29 @@ func NewJsEngine() *JavaScript {
 	return js
 }
 
-func GetJsEngine() *JavaScript {
-	mutex.Lock()
-	defer mutex.Unlock()
-	if cache.Len() == 0 {
-		isGenerate <- true
-		return NewJsEngine()
+func (e *Engine) GetJavaScript() *JavaScript {
+	e.mutex.Lock()
+	defer e.mutex.Unlock()
+	if e.cache.Len() == 0 {
+		e.isGenerate <- true
+		return e.NewJavaScript()
 	}
-	return cache.Remove(cache.Front()).(*JavaScript)
+	return e.cache.Remove(e.cache.Front()).(*JavaScript)
 }
 
-func GenerateJsspEnv(s *JsspServer, w http.ResponseWriter, r *http.Request) *JavaScript {
-	js := GetJsEngine()
+func (e *Engine) GenJsspEnv(s *JsspServer, w http.ResponseWriter, r *http.Request) *JavaScript {
+	js := e.GetJavaScript()
 	js.Set("file", GenerateObjFile(js, s.set.Dir+r.RequestURI))
 	js.Set("req", GenerateObjReq(js, r))
 	js.Set("res", GenerateObjRes(js, w))
 	return js
+}
+
+func (e *Engine) generate() {
+	for {
+		<-e.isGenerate
+		for e.cache.Len() < e.max {
+			e.cache.PushBack(e.NewJavaScript())
+		}
+	}
 }
