@@ -20,6 +20,7 @@ type JsspServer struct {
 	eng    *Engine
 	log    *Logging
 	set    *Setting
+	ses    *Sessions
 	static http.Handler
 	root   http.FileSystem
 }
@@ -29,6 +30,7 @@ func (s *JsspServer) Init() {
 	s.set = new(Setting)
 	s.set.Init()
 	s.eng = NewEngine()
+	s.ses = NewSessions()
 	s.root = http.Dir(s.set.Dir)
 	s.log = NewLogging(s.set.Log)
 	s.static = http.FileServer(s.root)

@@ -14,6 +14,10 @@ type Sessions struct {
 	data  map[string]*Session
 }
 
+func NewSessions() *Sessions {
+	return &Sessions{new(sync.Mutex), make(map[string]*Session)}
+}
+
 func (ss *Sessions) NewSession(id string) *Session {
 	return &Session{id, time.Now(), new(sync.Mutex), make(map[string]*otto.Value)}
 }
