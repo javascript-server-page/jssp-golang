@@ -10,16 +10,17 @@ import (
 const SESSION_KEY = "JSSP-SESSION-ID"
 
 type Sessions struct {
-	mutex *sync.Mutex
-	data  map[string]*Session
+	mutex   *sync.Mutex
+	expired time.Duration
+	data    map[string]*Session
 }
 
 func NewSessions() *Sessions {
-	return &Sessions{new(sync.Mutex), make(map[string]*Session)}
+	return &Sessions{new(sync.Mutex), time.Hour, make(map[string]*Session)}
 }
 
 func (ss *Sessions) NewSession(id string) *Session {
-	return &Session{id, time.Now(), new(sync.Mutex), make(map[string]*otto.Value)}
+	return &Session{id, time.Now().Add(ss.expired), new(sync.Mutex), make(map[string]*otto.Value)}
 }
 
 func (ss *Sessions) GetSession(r *http.Request) *Session {
@@ -31,7 +32,7 @@ func (ss *Sessions) GetSession(r *http.Request) *Session {
 		r.AddCookie(c)
 	}
 	s, ok := ss.data[c.Value]
-	if !ok {
+	if !ok || s.isExpired() {
 		s = ss.NewSession(c.Value)
 		ss.data[c.Value] = s
 	}
@@ -40,11 +41,11 @@ func (ss *Sessions) GetSession(r *http.Request) *Session {
 
 type Session struct {
 	id    string
-	ct    time.Time
+	et    time.Time
 	mutex *sync.Mutex
 	data  map[string]*otto.Value
 }
 
 func (s *Session) isExpired() bool {
-	return false
+	return s.et.After(time.Now())
 }
