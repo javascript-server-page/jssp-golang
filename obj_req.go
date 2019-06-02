@@ -16,44 +16,31 @@ func GenerateObjReq(js *JavaScript, r *http.Request, s *Session) *otto.Object {
 	obj.Set("remoteAddr", r.RemoteAddr)
 	obj.Set("cookie", build_cookie(js, r))
 	obj.Set("session", build_session(js, s))
-	obj.Set("parm", func(call otto.FunctionCall) otto.Value {
-		key := call.Argument(0)
-		if key.IsUndefined() {
-			return key
-		}
-		val := r.Form.Get(key.String())
-		return *js.CreateAny(val)
-	})
+	obj.Set("parm", r.Form.Get)
 	return obj
 }
 
 // build req.cookie object
 func build_cookie(js *JavaScript, r *http.Request) *otto.Object {
 	obj := js.CreateObjectValue().Object()
-	obj.Set("get", func(call otto.FunctionCall) otto.Value {
-		val := call.Argument(0)
-		if val.IsUndefined() {
-			return val
-		}
-		c, err := r.Cookie(val.String())
+	obj.Set("get", func(key *string) *string {
+		c, err := r.Cookie(*key)
 		if err != nil {
-			return otto.UndefinedValue()
+			return nil
 		}
-		return *js.CreateAny(c.Value)
+		return &c.Value
 	})
-	obj.Set("set", func(call otto.FunctionCall) otto.Value {
-		key := call.Argument(0)
-		if key.IsUndefined() || key.IsNull() {
-			return key
+	obj.Set("set", func(key *string, val *string) {
+		if key == nil {
+			return
 		}
-		keystr := key.String()
-		val := call.Argument(1)
-		c := &http.Cookie{Name: keystr, Value: val.String(),}
-		if val.IsUndefined() || val.IsNull() {
+		c := &http.Cookie{Name: *key,}
+		if val == nil {
 			c.MaxAge = -1
+		} else {
+			c.Value = *val
 		}
 		r.AddCookie(c)
-		return otto.UndefinedValue()
 	})
 	obj.Set("map", func(call otto.FunctionCall) otto.Value {
 		val := js.CreateObjectValue()
@@ -69,11 +56,11 @@ func build_cookie(js *JavaScript, r *http.Request) *otto.Object {
 // build req.session object
 func build_session(js *JavaScript, s *Session) *otto.Object {
 	obj := js.CreateObjectValue().Object()
-	obj.Set("get", func(call otto.FunctionCall) otto.Value {
-		return *js.CreateAny("")
+	obj.Set("get", func(key *string) *string {
+		return key
 	})
-	obj.Set("set", func(call otto.FunctionCall) otto.Value {
-		return *js.CreateAny("")
+	obj.Set("set", func(key *string, val *string) {
+
 	})
 	obj.Set("map", func(call otto.FunctionCall) otto.Value {
 		val := js.CreateObjectValue()
