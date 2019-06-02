@@ -12,27 +12,25 @@ var storage = make(map[string]string)
 
 func GenerateObjJssp(js *JavaScript) *otto.Object {
 	obj := js.CreateObjectValue().Object()
-	obj.Set("exec", func(call otto.FunctionCall) otto.Value {
-		if len(call.ArgumentList) == 0 {
-			return otto.UndefinedValue()
-		}
-		return *js.CreateAny(def_exec(call))
-	})
+	obj.Set("exec", def_jssp_exec)
 	obj.Set("version", Server)
 	obj.Set("os", runtime.GOOS)
 	obj.Set("arch", runtime.GOARCH)
-	obj.Set("storage", build_storage(js))
+	obj.Set("storage", build_jssp_storage(js))
 	return obj
 }
 
 // execute system command line
-func def_exec(call otto.FunctionCall) string {
+func def_jssp_exec(call otto.FunctionCall) string {
 	var res []byte
 	var err error
-	if len(call.ArgumentList) == 1 {
+	switch len(call.ArgumentList) {
+	case 0:
+		return ""
+	case 1:
 		cmd := exec.Command(call.Argument(0).String())
 		res, err = cmd.CombinedOutput()
-	} else {
+	default:
 		ss := make([]string, 0)
 		for _, v := range call.ArgumentList {
 			ss = append(ss, v.String())
@@ -48,49 +46,48 @@ func def_exec(call otto.FunctionCall) string {
 }
 
 // build jssp.storage object
-func build_storage(js *JavaScript) *otto.Object {
+func build_jssp_storage(js *JavaScript) *otto.Object {
 	obj := js.CreateObjectValue().Object()
-	obj.Set("getItem", func(call otto.FunctionCall) otto.Value {
+	obj.Set("getItem", func(key string) *string {
 		rwMutex.RLock()
 		defer rwMutex.RUnlock()
-		if res, is := storage[call.Argument(0).String()]; !is {
-			return otto.UndefinedValue()
+		if res, is := storage[key]; !is {
+			return nil
 		} else {
-			return *js.CreateAny(res)
+			return &res
 		}
 	})
-	obj.Set("setItem", func(call otto.FunctionCall) otto.Value {
+	obj.Set("setItem", func(key, val string){
 		rwMutex.Lock()
 		defer rwMutex.Unlock()
-		storage[call.Argument(0).String()] = call.Argument(1).String()
-		return otto.UndefinedValue()
+		storage[key] = val
 	})
-	obj.Set("removeItem", func(call otto.FunctionCall) otto.Value {
+	obj.Set("removeItem", func(key string) otto.Value {
 		rwMutex.Lock()
 		defer rwMutex.Unlock()
-		delete(storage, call.Argument(0).String())
+		delete(storage, key)
 		return otto.UndefinedValue()
 	})
-	obj.Set("size", func(call otto.FunctionCall) otto.Value {
+	obj.Set("size", func() int {
 		rwMutex.RLock()
 		defer rwMutex.RUnlock()
-		return *js.CreateAny(len(storage))
+		return len(storage)
 	})
-	obj.Set("keys", func(call otto.FunctionCall) otto.Value {
+	obj.Set("keys", func(call otto.FunctionCall) []string {
 		rwMutex.RLock()
 		defer rwMutex.RUnlock()
-		arr := js.CreateArray()
-		o := arr.Object()
+		i := 0
+		keys := make([]string, len(storage))
 		for key := range storage {
-			o.Call("push", key)
+			keys[i] = key
+			i++
 		}
-		return *arr
+		return keys
 	})
-	obj.Set("clear", func(call otto.FunctionCall) otto.Value {
+	obj.Set("clear", func(call otto.FunctionCall) {
 		rwMutex.Lock()
 		defer rwMutex.Unlock()
 		storage = make(map[string]string)
-		return otto.UndefinedValue()
 	})
 	return obj
 }
