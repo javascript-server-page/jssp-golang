@@ -17,6 +17,7 @@ func GenerateObjReq(js *JavaScript, r *http.Request, s *Session) *otto.Object {
 	obj.Set("cookie", build_cookie(js, r))
 	obj.Set("session", build_session(js, s))
 	obj.Set("parm", r.Form.Get)
+	obj.Set("file", "")
 	return obj
 }
 
@@ -24,6 +25,9 @@ func GenerateObjReq(js *JavaScript, r *http.Request, s *Session) *otto.Object {
 func build_cookie(js *JavaScript, r *http.Request) *otto.Object {
 	obj := js.CreateObjectValue().Object()
 	obj.Set("get", func(key *string) *string {
+		if key == nil {
+			return key
+		}
 		c, err := r.Cookie(*key)
 		if err != nil {
 			return nil
@@ -56,15 +60,23 @@ func build_cookie(js *JavaScript, r *http.Request) *otto.Object {
 // build req.session object
 func build_session(js *JavaScript, s *Session) *otto.Object {
 	obj := js.CreateObjectValue().Object()
-	obj.Set("get", func(key *string) *string {
-		return key
+	obj.Set("get", func(key *string) *otto.Value {
+		if key == nil {
+			return nil
+		}
+		val, ok := s.data[*key]
+		if ok {
+			return val
+		}
+		return nil
 	})
-	obj.Set("set", func(key *string, val *string) {
-
+	obj.Set("set", func(key *string, val *otto.Value) {
+		if key == nil {
+			return
+		}
+		s.data[*key] = val
 	})
-	obj.Set("map", func(call otto.FunctionCall) otto.Value {
-		val := js.CreateObjectValue()
-		return *val
-	})
+	obj.Set("start", s.mutex.Lock)
+	obj.Set("close", s.mutex.Unlock)
 	return obj
 }
