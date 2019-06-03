@@ -1,6 +1,9 @@
 package main
 
 import (
+	"crypto/md5"
+	"crypto/sha1"
+	"fmt"
 	"github.com/robertkrimen/otto"
 	"os/exec"
 	"runtime"
@@ -16,6 +19,7 @@ func GenerateObjJssp(js *JavaScript) *otto.Object {
 	obj.Set("version", Server)
 	obj.Set("os", runtime.GOOS)
 	obj.Set("arch", runtime.GOARCH)
+	obj.Set("cypto", build_jssp_cypto(js))
 	obj.Set("storage", build_jssp_storage(js))
 	return obj
 }
@@ -88,6 +92,18 @@ func build_jssp_storage(js *JavaScript) *otto.Object {
 		rwMutex.Lock()
 		defer rwMutex.Unlock()
 		storage = make(map[string]string)
+	})
+	return obj
+}
+
+// build jssp.cypto object
+func build_jssp_cypto(js *JavaScript) *otto.Object {
+	obj := js.CreateObjectValue().Object()
+	obj.Set("md5", func(key string) string {
+		return fmt.Sprintf("%x", md5.Sum([]byte(key)))
+	})
+	obj.Set("sha1", func(key string) string {
+		return fmt.Sprintf("%x", sha1.Sum([]byte(key)))
 	})
 	return obj
 }
