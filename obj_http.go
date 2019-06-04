@@ -12,38 +12,38 @@ import (
 func GenerateObjHttp(js *JavaScript) *otto.Object {
 	client := &http.Client{}
 	obj := js.CreateObjectValue().Object()
-	obj.Set("get", func(call otto.FunctionCall) otto.Value {
-		res, err := def_request(client, "GET", &call)
+	obj.Set("get", func(url string, body, header otto.Object) otto.Value {
+		res, err := def_request(client, "GET", url, &body, &header)
 		return *build_response(js, res, err)
 	})
-	obj.Set("head", func(call otto.FunctionCall) otto.Value {
-		res, err := def_request(client, "HEAD", &call)
+	obj.Set("head", func(url string, body, header otto.Object) otto.Value {
+		res, err := def_request(client, "HEAD", url, &body, &header)
 		return *build_response(js, res, err)
 	})
-	obj.Set("post", func(call otto.FunctionCall) otto.Value {
-		res, err := def_request(client, "POST", &call)
+	obj.Set("post", func(url string, body, header otto.Object) otto.Value {
+		res, err := def_request(client, "POST", url, &body, &header)
 		return *build_response(js, res, err)
 	})
-	obj.Set("put", func(call otto.FunctionCall) otto.Value {
-		res, err := def_request(client, "PUT", &call)
+	obj.Set("put", func(url string, body, header otto.Object) otto.Value {
+		res, err := def_request(client, "PUT", url, &body, &header)
+		return *build_response(js, res, err)
+	})
+	obj.Set("delete", func(url string, body, header otto.Object) otto.Value {
+		res, err := def_request(client, "DELETE", url, &body, &header)
 		return *build_response(js, res, err)
 	})
 	return obj
 }
 
 // http request method
-func def_request(client *http.Client, method string, call *otto.FunctionCall) (*http.Response, error) {
-	url, body, header := call.Argument(0), call.Argument(1), call.Argument(2)
-	req, err := http.NewRequest(convert_url_body(method, &url, &body))
+func def_request(client *http.Client, method, url string, body, header *otto.Object) (*http.Response, error) {
+	req, err := http.NewRequest(convert_url_body(method, url, body))
 	if err != nil {
 		return nil, err
 	}
-	if header.IsObject() {
-		h := header.Object()
-		for _, key := range h.Keys() {
-			value, _ := h.Get(key)
-			req.Header.Add(key, value.String())
-		}
+	for _, key := range header.Keys() {
+		value, _ := header.Get(key)
+		req.Header.Add(key, value.String())
 	}
 	return client.Do(req)
 }
@@ -65,8 +65,8 @@ func build_response(js *JavaScript, response *http.Response, err error) *otto.Va
 }
 
 // generate the http request parameters
-func convert_url_body(method string, url, params *otto.Value) (string, string, io.Reader) {
-	u := url.String()
+func convert_url_body(method string, url string, params *otto.Object) (string, string, io.Reader) {
+	u := url
 	p := params_string(params)
 	if method == "POST" || method == "PUT" {
 		return method, u, p
@@ -80,13 +80,10 @@ func convert_url_body(method string, url, params *otto.Value) (string, string, i
 }
 
 // convert key-value pairs to http parameters
-func params_string(params *otto.Value) *bytes.Buffer {
+func params_string(params *otto.Object) *bytes.Buffer {
 	buf := &bytes.Buffer{}
-	if !params.IsObject() {
-		return buf
-	}
-	for _, k := range params.Object().Keys() {
-		v, e := params.Object().Get(k)
+	for _, k := range params.Keys() {
+		v, e := params.Get(k)
 		if e != nil {
 			continue
 		}
@@ -114,27 +111,22 @@ func build_header(js *JavaScript, h http.Header) *otto.Object {
 // build an editable jssp.header object
 func build_editableheader(js *JavaScript, h http.Header) *otto.Object {
 	obj := js.CreateObjectValue().Object()
-	obj.Set("get", func(call otto.FunctionCall) otto.Value {
-		val := call.Argument(0)
-		if val.IsUndefined() {
-			return val
+	obj.Set("get", func(key *string) *string {
+		if key == nil {
+			return nil
 		}
-		return *js.CreateAny(h.Get(val.String()))
+		val := h.Get(*key)
+		return &val
 	})
-	obj.Set("set", func(call otto.FunctionCall) otto.Value {
-		key := call.Argument(0)
-		if key.IsUndefined() || key.IsNull() {
-			return key
+	obj.Set("set", func(key *string, val *string) {
+		if key == nil {
+			return
 		}
-		val := call.Argument(1)
-		if val.IsUndefined() || val.IsNull() {
-			h.Del(key.String())
-			return val
+		if val == nil {
+			h.Del(*key)
+		} else {
+			h.Add(*key, *val)
 		}
-		keystr := key.String()
-		pre := *js.CreateAny(h.Get(keystr))
-		h.Set(keystr, val.String())
-		return pre
 	})
 	obj.Set("map", func(call otto.FunctionCall) otto.Value {
 		val := js.CreateObjectValue()
