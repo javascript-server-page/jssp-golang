@@ -15,7 +15,9 @@ var storage = make(map[string]string)
 
 func GenerateObjJssp(js *JavaScript) *otto.Object {
 	obj := js.CreateObjectValue().Object()
-	obj.Set("exec", def_jssp_exec)
+	obj.Set("exec", func(call otto.FunctionCall) otto.Value {
+		return *js.CreateAny(def_jssp_exec(&call))
+	})
 	obj.Set("version", Server)
 	obj.Set("os", runtime.GOOS)
 	obj.Set("arch", runtime.GOARCH)
@@ -25,23 +27,21 @@ func GenerateObjJssp(js *JavaScript) *otto.Object {
 }
 
 // execute system command line
-func def_jssp_exec(call otto.FunctionCall) string {
-	var res []byte
-	var err error
+func def_jssp_exec(call *otto.FunctionCall) string {
+	var cmd *exec.Cmd
 	switch len(call.ArgumentList) {
 	case 0:
 		return ""
 	case 1:
-		cmd := exec.Command(call.Argument(0).String())
-		res, err = cmd.CombinedOutput()
+		cmd = exec.Command(call.Argument(0).String())
 	default:
 		ss := make([]string, 0)
 		for _, v := range call.ArgumentList {
 			ss = append(ss, v.String())
 		}
-		cmd := exec.Command(ss[0], ss[1:]...)
-		res, err = cmd.CombinedOutput()
+		cmd = exec.Command(ss[0], ss[1:]...)
 	}
+	res, err := cmd.CombinedOutput()
 	if err != nil {
 		return err.Error()
 	} else {
@@ -61,7 +61,7 @@ func build_jssp_storage(js *JavaScript) *otto.Object {
 			return &res
 		}
 	})
-	obj.Set("setItem", func(key, val string){
+	obj.Set("setItem", func(key, val string) {
 		rwMutex.Lock()
 		defer rwMutex.Unlock()
 		storage[key] = val
@@ -77,7 +77,7 @@ func build_jssp_storage(js *JavaScript) *otto.Object {
 		defer rwMutex.RUnlock()
 		return len(storage)
 	})
-	obj.Set("keys", func(call otto.FunctionCall) []string {
+	obj.Set("keys", func() []string {
 		rwMutex.RLock()
 		defer rwMutex.RUnlock()
 		i := 0
@@ -88,7 +88,7 @@ func build_jssp_storage(js *JavaScript) *otto.Object {
 		}
 		return keys
 	})
-	obj.Set("clear", func(call otto.FunctionCall) {
+	obj.Set("clear", func() {
 		rwMutex.Lock()
 		defer rwMutex.Unlock()
 		storage = make(map[string]string)
