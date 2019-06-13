@@ -12,38 +12,43 @@ import (
 func GenerateObjHttp(js *JavaScript) *otto.Object {
 	client := &http.Client{}
 	obj := js.CreateObjectValue().Object()
-	obj.Set("get", func(url string, body, header otto.Object) otto.Value {
-		res, err := def_request(client, "GET", url, &body, &header)
+	obj.Set("get", func(call otto.FunctionCall) otto.Value {
+		res, err := def_request(client, "GET", &call)
 		return *build_response(js, res, err)
 	})
-	obj.Set("head", func(url string, body, header otto.Object) otto.Value {
-		res, err := def_request(client, "HEAD", url, &body, &header)
+	obj.Set("head", func(call otto.FunctionCall) otto.Value {
+		res, err := def_request(client, "HEAD", &call)
 		return *build_response(js, res, err)
 	})
-	obj.Set("post", func(url string, body, header otto.Object) otto.Value {
-		res, err := def_request(client, "POST", url, &body, &header)
+	obj.Set("post", func(call otto.FunctionCall) otto.Value {
+		res, err := def_request(client, "POST", &call)
 		return *build_response(js, res, err)
 	})
-	obj.Set("put", func(url string, body, header otto.Object) otto.Value {
-		res, err := def_request(client, "PUT", url, &body, &header)
+	obj.Set("put", func(call otto.FunctionCall) otto.Value {
+		res, err := def_request(client, "PUT", &call)
 		return *build_response(js, res, err)
 	})
-	obj.Set("delete", func(url string, body, header otto.Object) otto.Value {
-		res, err := def_request(client, "DELETE", url, &body, &header)
+	obj.Set("delete", func(call otto.FunctionCall) otto.Value {
+		res, err := def_request(client, "DELETE", &call)
 		return *build_response(js, res, err)
 	})
 	return obj
 }
 
 // http request method
-func def_request(client *http.Client, method, url string, body, header *otto.Object) (*http.Response, error) {
+func def_request(client *http.Client, method string, call *otto.FunctionCall) (*http.Response, error) {
+	url := call.Argument(0).String()
+	body := call.Argument(1).Object()
+	header := call.Argument(2).Object()
 	req, err := http.NewRequest(convert_url_body(method, url, body))
 	if err != nil {
 		return nil, err
 	}
-	for _, key := range header.Keys() {
-		value, _ := header.Get(key)
-		req.Header.Add(key, value.String())
+	if header.Value().IsObject() {
+		for _, key := range header.Keys() {
+			value, _ := header.Get(key)
+			req.Header.Add(key, value.String())
+		}
 	}
 	return client.Do(req)
 }
