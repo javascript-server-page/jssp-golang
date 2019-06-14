@@ -44,7 +44,7 @@ func def_request(client *http.Client, method string, call *otto.FunctionCall) (*
 	if err != nil {
 		return nil, err
 	}
-	if header.Value().IsObject() {
+	if header != nil && header.Value().IsObject() {
 		for _, key := range header.Keys() {
 			value, _ := header.Get(key)
 			req.Header.Add(key, value.String())
@@ -87,18 +87,20 @@ func convert_url_body(method string, url string, params *otto.Object) (string, s
 // convert key-value pairs to http parameters
 func params_string(params *otto.Object) *bytes.Buffer {
 	buf := &bytes.Buffer{}
-	for _, k := range params.Keys() {
-		v, e := params.Get(k)
-		if e != nil {
-			continue
+	if (params != nil) {
+		for _, k := range params.Keys() {
+			v, e := params.Get(k)
+			if e != nil {
+				continue
+			}
+			buf.WriteString(k)
+			buf.WriteByte('=')
+			buf.WriteString(v.String())
+			buf.WriteByte('&')
 		}
-		buf.WriteString(k)
-		buf.WriteByte('=')
-		buf.WriteString(v.String())
-		buf.WriteByte('&')
-	}
-	if buf.Len() > 0 {
-		buf.Truncate(buf.Len() - 1)
+		if buf.Len() > 0 {
+			buf.Truncate(buf.Len() - 1)
+		}
 	}
 	return buf
 }
