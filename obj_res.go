@@ -54,16 +54,8 @@ func GenerateObjRes(js *JavaScript, w http.ResponseWriter) *otto.Object {
 		w.Header().Set("Content-Type", ct)
 		return otto.Value{}
 	})
-	obj.Set("include", func(call otto.FunctionCall) otto.Value {
-		file, err := js.Get("file")
-		if err != nil {
-			return *js.CreateError(err)
-		}
-		fval := call.Argument(0)
-		if fval.IsUndefined() {
-			return fval
-		}
-		fname := fval.String()
+	file, _ := js.Get("file")
+	obj.Set("include", func(fname string) otto.Value {
 		f, err := file.Object().Call("open", fname)
 		if err != nil {
 			return *js.CreateError(err)
@@ -80,24 +72,21 @@ func GenerateObjRes(js *JavaScript, w http.ResponseWriter) *otto.Object {
 			return src
 		}
 		if strings.HasSuffix(fname, "js") {
-			return *def_runsrc(js, src.String())
+			val, err := js.Eval(src.String())
+			if err != nil {
+				return *js.CreateError(err)
+			}
+			return val
 		} else if strings.HasSuffix(fname, ".jssp") {
-			src := jssp_jsjs([]byte(src.String()))
-			return *def_runsrc(js, src)
+			val, err := js.Eval(src.String())
+			if err != nil {
+				return *js.CreateError(err)
+			}
+			return val
 		} else {
 			w.Write([]byte(src.String()))
 			return otto.UndefinedValue()
 		}
 	})
 	return obj
-}
-
-// run js src code
-func def_runsrc(js *JavaScript, src interface{}) *otto.Value {
-	str, err := js.Eval(src)
-	if err != nil {
-		return js.CreateError(err)
-	} else {
-		return &str
-	}
 }
