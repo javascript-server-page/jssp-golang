@@ -10,8 +10,7 @@ import (
 	"sync"
 )
 
-var rwMutex = new(sync.RWMutex)
-var storage = make(map[string]string)
+var storage = new(sync.Map)
 
 func GenerateObjJssp(js *JavaScript) *otto.Object {
 	obj := js.CreateObjectValue().Object()
@@ -53,45 +52,24 @@ func def_jssp_exec(call *otto.FunctionCall) string {
 func build_jssp_storage(js *JavaScript) *otto.Object {
 	obj := js.CreateObjectValue().Object()
 	obj.Set("getItem", func(key string) *string {
-		rwMutex.RLock()
-		defer rwMutex.RUnlock()
-		if res, is := storage[key]; !is {
+		if res, is := storage.Load(key); !is {
 			return nil
 		} else {
-			return &res
+			str := res.(string)
+			return &str
 		}
 	})
 	obj.Set("setItem", func(key, val string) {
-		rwMutex.Lock()
-		defer rwMutex.Unlock()
-		storage[key] = val
+		storage.Store(key, val)
 	})
-	obj.Set("removeItem", func(key string) otto.Value {
-		rwMutex.Lock()
-		defer rwMutex.Unlock()
-		delete(storage, key)
-		return otto.UndefinedValue()
-	})
-	obj.Set("size", func() int {
-		rwMutex.RLock()
-		defer rwMutex.RUnlock()
-		return len(storage)
-	})
-	obj.Set("keys", func() []string {
-		rwMutex.RLock()
-		defer rwMutex.RUnlock()
-		i := 0
-		keys := make([]string, len(storage))
-		for key := range storage {
-			keys[i] = key
-			i++
-		}
-		return keys
+	obj.Set("removeItem", func(key string) {
+		storage.Delete(key)
 	})
 	obj.Set("clear", func() {
-		rwMutex.Lock()
-		defer rwMutex.Unlock()
-		storage = make(map[string]string)
+		storage.Range(func(key, value interface{}) bool {
+			storage.Delete(key)
+			return true
+		})
 	})
 	return obj
 }
