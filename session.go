@@ -10,13 +10,12 @@ import (
 const SESSION_KEY = "JSSP-SESSION-ID"
 
 type Sessions struct {
-	mutex   *sync.Mutex
+	data    *sync.Map
 	expired time.Duration
-	data    map[string]*Session
 }
 
 func NewSessions() *Sessions {
-	return &Sessions{new(sync.Mutex), time.Hour, make(map[string]*Session)}
+	return &Sessions{new(sync.Map), time.Hour}
 }
 
 func (ss *Sessions) NewSession(id string) *Session {
@@ -24,19 +23,17 @@ func (ss *Sessions) NewSession(id string) *Session {
 }
 
 func (ss *Sessions) GetSession(r *http.Request) *Session {
-	ss.mutex.Lock()
-	defer ss.mutex.Unlock()
 	c, err := r.Cookie(SESSION_KEY)
 	if err != nil {
 		c = &http.Cookie{Name: SESSION_KEY, Value: getUUID()}
 		r.AddCookie(c)
 	}
-	s, ok := ss.data[c.Value]
-	if !ok || s.isExpired() {
+	s, ok := ss.data.Load(c.Value)
+	if !ok || s.(*Session).isExpired() {
 		s = ss.NewSession(c.Value)
-		ss.data[c.Value] = s
+		ss.data.Store(c.Value, s)
 	}
-	return s
+	return s.(*Session)
 }
 
 type Session struct {
