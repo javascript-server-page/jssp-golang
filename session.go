@@ -22,11 +22,11 @@ func (ss *Sessions) NewSession(id string) *Session {
 	return &Session{id, time.Now().Add(ss.expired), new(sync.Mutex), make(map[string]*otto.Value)}
 }
 
-func (ss *Sessions) GetSession(r *http.Request) *Session {
+func (ss *Sessions) GetSession(r *http.Request, w http.ResponseWriter) *Session {
 	c, err := r.Cookie(SESSION_KEY)
 	if err != nil {
 		c = &http.Cookie{Name: SESSION_KEY, Value: getUUID()}
-		r.AddCookie(c)
+		http.SetCookie(w, c)
 	}
 	s, ok := ss.data.Load(c.Value)
 	if !ok || s.(*Session).isExpired() {
