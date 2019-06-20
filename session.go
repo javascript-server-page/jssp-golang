@@ -44,5 +44,5 @@ type Session struct {
 }
 
 func (s *Session) isExpired() bool {
-	return s.et.After(time.Now())
+	return s.et.Before(time.Now())
 }
