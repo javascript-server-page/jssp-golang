@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func GenerateObjReq(js *JavaScript, r *http.Request, s *Session) *otto.Object {
+func GenerateObjReq(js *JavaScript, r *http.Request, w http.ResponseWriter, s *Session) *otto.Object {
 	r.ParseForm()
 	obj := js.CreateObjectValue().Object()
 	obj.Set("header", build_header(js, r.Header))
@@ -14,7 +14,7 @@ func GenerateObjReq(js *JavaScript, r *http.Request, s *Session) *otto.Object {
 	obj.Set("path", r.URL.Path)
 	obj.Set("proto", r.Proto)
 	obj.Set("remoteAddr", r.RemoteAddr)
-	obj.Set("cookie", build_cookie(js, r))
+	obj.Set("cookie", build_cookie(js, r, w))
 	obj.Set("session", build_session(js, s))
 	obj.Set("parm", r.Form.Get)
 	obj.Set("file", "")
@@ -22,7 +22,7 @@ func GenerateObjReq(js *JavaScript, r *http.Request, s *Session) *otto.Object {
 }
 
 // build req.cookie object
-func build_cookie(js *JavaScript, r *http.Request) *otto.Object {
+func build_cookie(js *JavaScript, r *http.Request, w http.ResponseWriter) *otto.Object {
 	obj := js.CreateObjectValue().Object()
 	obj.Set("get", func(key *string) *string {
 		if key == nil {
@@ -44,7 +44,7 @@ func build_cookie(js *JavaScript, r *http.Request) *otto.Object {
 		} else {
 			c.Value = *val
 		}
-		r.AddCookie(c)
+		http.SetCookie(w, c)
 	})
 	obj.Set("map", func(call otto.FunctionCall) otto.Value {
 		val := js.CreateObjectValue()
