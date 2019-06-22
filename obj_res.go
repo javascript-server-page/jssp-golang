@@ -45,14 +45,9 @@ func GenerateObjRes(js *JavaScript, w http.ResponseWriter) *otto.Object {
 	})
 	obj := js.CreateObjectValue().Object()
 	obj.Set("header", build_editableheader(js, w.Header()))
-	obj.Set("type", func(call otto.FunctionCall) otto.Value {
-		fval := call.Argument(0)
-		if fval.IsUndefined() {
-			return fval
-		}
-		ct := mime.TypeByExtension("." + fval.String())
+	obj.Set("type", func(name string) {
+		ct := mime.TypeByExtension("." + name)
 		w.Header().Set("Content-Type", ct)
-		return otto.Value{}
 	})
 	file, _ := js.Get("file")
 	obj.Set("include", func(fname string) otto.Value {
