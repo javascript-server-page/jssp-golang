@@ -112,7 +112,7 @@ func (s *JsspServer) Run() {
 }
 
 func main() {
-	js := new(JsspServer)
-	js.Init()
-	js.Run()
+	jssp := new(JsspServer)
+	jssp.Init()
+	jssp.Run()
 }
