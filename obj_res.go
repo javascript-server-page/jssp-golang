@@ -8,6 +8,8 @@ import (
 )
 
 func GenerateObjRes(js *JavaScript, w http.ResponseWriter) *otto.Object {
+	json, _ := js.Get("JSON")
+	file, _ := js.Get("file")
 	js.Set("echo", func(call otto.FunctionCall) otto.Value {
 		for _, e := range call.ArgumentList {
 			str := e.String()
@@ -21,10 +23,6 @@ func GenerateObjRes(js *JavaScript, w http.ResponseWriter) *otto.Object {
 		n := len(call.ArgumentList)
 		if n == 0 {
 			return otto.UndefinedValue()
-		}
-		json, err := js.Get("JSON")
-		if err != nil {
-			return *js.CreateError(err)
 		}
 		var value interface{}
 		if n == 1 {
@@ -49,7 +47,6 @@ func GenerateObjRes(js *JavaScript, w http.ResponseWriter) *otto.Object {
 		ct := mime.TypeByExtension("." + name)
 		w.Header().Set("Content-Type", ct)
 	})
-	file, _ := js.Get("file")
 	obj.Set("include", func(fname string) otto.Value {
 		f, err := file.Object().Call("open", fname)
 		if err != nil {
