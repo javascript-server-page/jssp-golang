@@ -10,7 +10,7 @@ import (
 )
 
 func GenerateObjHttp(js *JavaScript) *otto.Object {
-	client := &http.Client{}
+	client := &http.Client{Transport: nil}
 	obj := js.CreateObjectValue().Object()
 	obj.Set("get", func(call otto.FunctionCall) otto.Value {
 		res, err := def_request(client, "GET", &call)
