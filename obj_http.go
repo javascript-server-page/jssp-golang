@@ -16,10 +16,6 @@ func GenerateObjHttp(js *JavaScript) *otto.Object {
 		res, err := def_request(client, "GET", &call)
 		return *build_response(js, res, err)
 	})
-	obj.Set("head", func(call otto.FunctionCall) otto.Value {
-		res, err := def_request(client, "HEAD", &call)
-		return *build_response(js, res, err)
-	})
 	obj.Set("post", func(call otto.FunctionCall) otto.Value {
 		res, err := def_request(client, "POST", &call)
 		return *build_response(js, res, err)
@@ -61,10 +57,15 @@ func build_response(js *JavaScript, response *http.Response, err error) *otto.Va
 		obj.Set("status", -1)
 		obj.Set("error", err.Error())
 	} else {
-		data, _ := ioutil.ReadAll(response.Body)
-		obj.Set("status", response.StatusCode)
-		obj.Set("body", string(data))
-		obj.Set("header", build_header(js, response.Header))
+		data, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			obj.Set("status", -1)
+			obj.Set("error", err.Error())
+		} else {
+			obj.Set("status", response.StatusCode)
+			obj.Set("body", string(data))
+			obj.Set("header", build_header(js, response.Header))
+		}
 	}
 	return val
 }
