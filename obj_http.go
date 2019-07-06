@@ -34,15 +34,16 @@ func GenerateObjHttp(js *JavaScript) *otto.Object {
 // http request method
 func def_request(client *http.Client, method string, call *otto.FunctionCall) (*http.Response, error) {
 	url := call.Argument(0).String()
-	body := call.Argument(1).Object()
-	header := call.Argument(2).Object()
-	req, err := http.NewRequest(convert_url_body(method, url, body))
+	body := call.Argument(1)
+	header := call.Argument(2)
+	req, err := http.NewRequest(convert_url_body(method, url, &body))
 	if err != nil {
 		return nil, err
 	}
-	if header != nil && header.Value().IsObject() {
-		for _, key := range header.Keys() {
-			value, _ := header.Get(key)
+	if header.IsObject() {
+		h := header.Object()
+		for _, key := range h.Keys() {
+			value, _ := h.Get(key)
 			req.Header.Add(key, value.String())
 		}
 	}
@@ -71,7 +72,7 @@ func build_response(js *JavaScript, response *http.Response, err error) *otto.Va
 }
 
 // generate the http request parameters
-func convert_url_body(method string, url string, params *otto.Object) (string, string, io.Reader) {
+func convert_url_body(method string, url string, params *otto.Value) (string, string, io.Reader) {
 	u := url
 	p := params_string(params)
 	if method == "POST" || method == "PUT" {
@@ -86,11 +87,16 @@ func convert_url_body(method string, url string, params *otto.Object) (string, s
 }
 
 // convert key-value pairs to http parameters
-func params_string(params *otto.Object) *bytes.Buffer {
+func params_string(params *otto.Value) *bytes.Buffer {
 	buf := &bytes.Buffer{}
-	if (params != nil) {
-		for _, k := range params.Keys() {
-			v, e := params.Get(k)
+	if params == nil{
+		return buf
+	} else if params.IsString() {
+		buf.WriteString(params.String())
+	} else if params.IsObject() {
+		ps := params.Object()
+		for _, k := range ps.Keys() {
+			v, e := ps.Get(k)
 			if e != nil {
 				continue
 			}
