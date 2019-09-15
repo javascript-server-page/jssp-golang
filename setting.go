@@ -7,9 +7,10 @@ import (
 )
 
 type Setting struct {
-	Dir  string
-	Log  string
-	Port string
+	Expired int
+	Dir     string
+	Log     string
+	Port    string
 }
 
 func (set *Setting) Init() {
@@ -21,6 +22,7 @@ func (set *Setting) Init() {
 	flag.StringVar(&(set.Dir), "d", ".", "jssp folder")
 	flag.StringVar(&(set.Log), "l", "req.log", "log file")
 	flag.StringVar(&(set.Port), "p", "2019", "listening port")
+	flag.IntVar(&(set.Expired), "e", 3600, "session expired")
 	flag.Parse()
 	if help {
 		printUsage()

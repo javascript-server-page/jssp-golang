@@ -14,8 +14,8 @@ type Sessions struct {
 	expired time.Duration
 }
 
-func NewSessions() *Sessions {
-	return &Sessions{new(sync.Map), time.Hour}
+func NewSessions(expired int) *Sessions {
+	return &Sessions{new(sync.Map), time.Second * time.Duration(expired)}
 }
 
 func (ss *Sessions) NewSession(id string) *Session {

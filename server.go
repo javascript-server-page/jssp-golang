@@ -30,9 +30,9 @@ func (s *JsspServer) Init() {
 	s.set = new(Setting)
 	s.set.Init()
 	s.eng = NewEngine()
-	s.ses = NewSessions()
 	s.root = http.Dir(s.set.Dir)
 	s.log = NewLogging(s.set.Log)
+	s.ses = NewSessions(s.set.Expired)
 	s.static = http.FileServer(s.root)
 	s.HandleFunc("/", s.log.RequestLogHandlerFunc(s.ServeAll))
 }
