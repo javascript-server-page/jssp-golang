@@ -1,0 +1,52 @@
+
+# jssp server
+server:
+  # server debug mode
+  debug: true
+  # jssp dir
+  dir: demo
+  # server port
+  port: 2019
+  # render timeout(s)
+  timeout: 60
+  # render file type
+  enable:
+    dir: false
+    file: true
+    jssp: true
+    jsjs: true
+
+# server log
+log:
+  # log path or false
+  info: log/info
+  error: log/error
+  access: log/access
+
+# babel 
+babel:
+  enable: false
+  # babel path.
+  path: https://unpkg.com/@babel/standalone/babel.min.js
+  # ts or es6
+  ts: true
+
+# vmpool
+vmpool:
+  enable: true
+  # The number of vm's cache pool.
+  size: 2
+  # The number of retries to get the vm from the cache pool.
+  retry: 10
+
+# astpool
+astpool:
+  enable: true
+  # Cache size(m).
+  size: 64
+  # Caching strategy: lru, lfu, arc, simple.
+  mode : arc
+
+# db
+db:
+  enable: true

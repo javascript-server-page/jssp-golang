@@ -1,10 +1,11 @@
-package main
+package session
 
 import (
-	"github.com/robertkrimen/otto"
 	"net/http"
 	"sync"
 	"time"
+
+	"github.com/dop251/goja"
 )
 
 const SESSION_KEY = "JSSP-SESSION-ID"
@@ -19,13 +20,13 @@ func NewSessions(expired int) *Sessions {
 }
 
 func (ss *Sessions) NewSession(id string) *Session {
-	return &Session{id, time.Now().Add(ss.expired), new(sync.Mutex), make(map[string]*otto.Value)}
+	return &Session{id, time.Now().Add(ss.expired), new(sync.Mutex), make(map[string]goja.Value)}
 }
 
 func (ss *Sessions) GetSession(r *http.Request, w http.ResponseWriter) *Session {
 	c, err := r.Cookie(SESSION_KEY)
 	if err != nil {
-		c = &http.Cookie{Name: SESSION_KEY, Value: getUUID()}
+		c = &http.Cookie{Name: SESSION_KEY, Value: "getUUID()"}
 		http.SetCookie(w, c)
 	}
 	s, ok := ss.data.Load(c.Value)
@@ -40,7 +41,7 @@ type Session struct {
 	id    string
 	et    time.Time
 	mutex *sync.Mutex
-	data  map[string]*otto.Value
+	data  map[string]goja.Value
 }
 
 func (s *Session) isExpired() bool {

@@ -22,9 +22,6 @@ target/
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-# Golang mod
-go.sum
-
 # Jssp
 *.jssp
 *.jsjs
